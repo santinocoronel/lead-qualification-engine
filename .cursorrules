@@ -1,0 +1,60 @@
+# Lead Qualification Engine — Project Rules
+
+## Stack
+- Python 3.12+, FastAPI, SQLAlchemy 2.0 Async (asyncpg), Pydantic v2, google-genai
+- Architecture: Clean Architecture / Hexagonal (Domain → Application → Infrastructure → API)
+- Deployment: Docker multi-stage, docker-compose (PostgreSQL 16 + API), Alembic migrations
+
+## Code Standards
+- **Strict typing**: No `Any`, no `object` evasions. Use `mypy --strict`.
+- **Pydantic v2** for all external-facing schemas (DTOs). Domain uses frozen dataclasses.
+- **Structured logging**: `structlog` with JSON output. Every request tagged with `X-Request-ID`.
+- **Domain errors**: Typed exception hierarchy under `src/domain/errors/`. Never swallow exceptions.
+- **Validation at boundaries**: All API payloads validated via Pydantic models. Domain entities validate invariants in `__post_init__`.
+
+## Architecture Rules
+- Domain layer has ZERO infrastructure imports. Ports (abstract interfaces) define contracts.
+- Use Cases orchestrate domain logic and call ports. They never import concrete adapters.
+- Infrastructure adapters implement ports. Wired via FastAPI dependency injection through lifespan-scoped singletons.
+- API layer only maps HTTP ↔ Use Case commands/results. No business logic in routers.
+
+## Database
+- PostgreSQL with `asyncpg`. All queries via SQLAlchemy 2.0 async sessions.
+- Transactional writes use `async with session.begin()`.
+- Naming convention enforced via `MetaData(naming_convention=...)`.
+- Migrations managed by Alembic. Never modify the DB schema without a migration file.
+
+## LLM Integration
+- Google Gemini via `google-genai` SDK with `response_schema` for structured JSON output.
+- Response validation via Pydantic model. Invalid LLM responses raise `LLMResponseValidationError`.
+- Provider failures raise `LLMProviderError` → mapped to HTTP 502.
+
+## API Hardening
+- CORS configurable via `CORS_ORIGINS` env var.
+- Request ID middleware injects `X-Request-ID` header on every response.
+- Health check at `/health` (DB connectivity) and `/ping` (liveness).
+- Global error handler maps all domain errors to semantic HTTP status codes.
+
+## Testing
+- `pytest` + `pytest-asyncio` (auto mode).
+- Unit tests mock ports (repository, LLM). Integration tests use `TestClient` with dependency overrides.
+- Cover: happy path, all status thresholds, validation edge cases, LLM failure modes, health endpoints.
+
+## Deployment
+- `docker compose up` starts PostgreSQL + runs migrations + launches API.
+- Set `GEMINI_API_KEY` in `.env` before deploying.
+- Production: 4 uvicorn workers, Docker healthcheck on `/ping`.
+
+## File Organization
+```
+src/
+├── domain/          # Entities, Value Objects, Ports, Errors
+├── application/     # Use Cases (orchestration)
+├── infrastructure/  # Adapters: DB, LLM, Config
+└── api/             # FastAPI routers, schemas, middleware, DI
+tests/
+├── unit/            # Domain + Use Case tests
+└── integration/     # API endpoint + health tests
+alembic/
+└── versions/        # Database migration scripts
+```

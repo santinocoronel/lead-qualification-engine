@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: leaduser
+      POSTGRES_PASSWORD: leadpass
+      POSTGRES_DB: lead_engine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaduser -d lead_engine"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://leaduser:leadpass@db:5432/lead_engine
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?Set GEMINI_API_KEY in .env}
+      GEMINI_MODEL: gemini-2.0-flash
+      CORS_ORIGINS: '["*"]'
+      DEBUG: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://leaduser:leadpass@db:5432/lead_engine
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
