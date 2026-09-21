@@ -24,6 +24,7 @@ COPY src/ src/
 COPY main.py ./
 COPY alembic/ alembic/
 COPY alembic.ini ./
+COPY static/ static/
 
 RUN adduser --disabled-password --no-create-home appuser
 USER appuser
