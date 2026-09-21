@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     db_max_overflow: int = Field(default=20, ge=0, le=100)
 
     gemini_api_key: str = Field(description="Google Gemini API key")
-    gemini_model: str = Field(default="gemini-2.0-flash")
+    gemini_model: str = Field(default="gemini-2.5-flash")
     llm_timeout_seconds: int = Field(default=30, ge=5, le=120)
     llm_max_retries: int = Field(default=3, ge=1, le=10)
     llm_retry_base_delay: float = Field(default=1.0, ge=0.1, le=10.0)

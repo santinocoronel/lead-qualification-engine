@@ -40,25 +40,66 @@ _OPENAI_COMPAT_PROVIDERS: dict[str, _ProviderSpec] = {
 }
 
 
+PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
+    "gemini": [
+        ("gemini-2.5-flash", "Gemini 2.5 Flash"),
+        ("gemini-2.5-pro", "Gemini 2.5 Pro"),
+        ("gemini-2.5-flash-lite-preview-06-17", "Gemini 2.5 Flash Lite"),
+    ],
+    "openai": [
+        ("gpt-4o", "GPT-4o"),
+        ("gpt-4o-mini", "GPT-4o Mini"),
+        ("gpt-4.1", "GPT-4.1"),
+        ("gpt-4.1-mini", "GPT-4.1 Mini"),
+        ("o3-mini", "o3 Mini"),
+    ],
+    "anthropic": [
+        ("claude-sonnet-4-20250514", "Claude Sonnet 4"),
+        ("claude-haiku-4-20250414", "Claude Haiku 4"),
+    ],
+    "deepseek": [
+        ("deepseek-chat", "DeepSeek V3"),
+        ("deepseek-coder", "DeepSeek Coder"),
+        ("deepseek-reasoner", "DeepSeek R1"),
+    ],
+    "mistral": [
+        ("codestral-latest", "Codestral"),
+        ("mistral-large-latest", "Mistral Large"),
+        ("mistral-small-latest", "Mistral Small"),
+    ],
+}
+
+_DEFAULT_MODELS: dict[str, str] = {
+    provider: models[0][0] for provider, models in PROVIDER_MODELS.items()
+}
+
+
 async def stream_code_generation(
     provider: str,
     api_key: str,
     system_prompt: str,
     user_prompt: str,
+    model: str | None = None,
 ) -> AsyncIterator[str]:
+    resolved_model = model or _DEFAULT_MODELS.get(provider, "")
+
     if provider == "gemini":
-        async for chunk in _stream_gemini(api_key, system_prompt, user_prompt):
+        async for chunk in _stream_gemini(api_key, system_prompt, user_prompt, resolved_model):
             yield chunk
         return
 
     if provider == "anthropic":
-        async for chunk in _stream_anthropic(api_key, system_prompt, user_prompt):
+        async for chunk in _stream_anthropic(api_key, system_prompt, user_prompt, resolved_model):
             yield chunk
         return
 
     spec = _OPENAI_COMPAT_PROVIDERS.get(provider)
     if not spec:
         raise LLMProviderError(f"Unsupported provider: {provider}")
+
+    if resolved_model:
+        from dataclasses import replace
+        spec = replace(spec, model=resolved_model)
 
     async for chunk in _stream_openai_compat(spec, api_key, system_prompt, user_prompt):
         yield chunk
@@ -112,7 +153,7 @@ async def _stream_openai_compat(
 
 
 async def _stream_gemini(
-    api_key: str, system_prompt: str, user_prompt: str
+    api_key: str, system_prompt: str, user_prompt: str, model: str = "gemini-2.5-flash"
 ) -> AsyncIterator[str]:
     try:
         from google import genai
@@ -120,7 +161,7 @@ async def _stream_gemini(
 
         client = genai.Client(api_key=api_key)
         response = await client.aio.models.generate_content_stream(
-            model="gemini-2.0-flash",
+            model=model,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
@@ -138,7 +179,7 @@ async def _stream_gemini(
 
 
 async def _stream_anthropic(
-    api_key: str, system_prompt: str, user_prompt: str
+    api_key: str, system_prompt: str, user_prompt: str, model: str = "claude-sonnet-4-20250514"
 ) -> AsyncIterator[str]:
     try:
         async with httpx.AsyncClient(timeout=_STREAM_TIMEOUT) as client:
@@ -151,7 +192,7 @@ async def _stream_anthropic(
                     "content-type": "application/json",
                 },
                 json={
-                    "model": "claude-sonnet-4-20250514",
+                    "model": model,
                     "max_tokens": 8192,
                     "system": system_prompt,
                     "messages": [{"role": "user", "content": user_prompt}],

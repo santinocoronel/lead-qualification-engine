@@ -22,7 +22,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://leaduser:leadpass@db:5432/lead_engine
       GEMINI_API_KEY: ${GEMINI_API_KEY:?Set GEMINI_API_KEY in .env}
-      GEMINI_MODEL: gemini-2.0-flash
+      GEMINI_MODEL: gemini-2.5-flash
       CORS_ORIGINS: '["*"]'
       DEBUG: "false"
     depends_on:

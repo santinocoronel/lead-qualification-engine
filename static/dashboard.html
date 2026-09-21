@@ -294,14 +294,17 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         <div class="icon icon-provider">&#x2728;</div>
         <h2>AI Provider</h2>
       </div>
-      <div class="form-group"><label>Model</label>
-        <select id="gen-provider">
-          <option value="gemini">Google Gemini 2.0 Flash</option>
-          <option value="openai">OpenAI GPT-4o</option>
-          <option value="anthropic">Anthropic Claude Sonnet 4</option>
-          <option value="deepseek">DeepSeek Coder</option>
-          <option value="mistral">Mistral Codestral</option>
+      <div class="form-group"><label>Provider</label>
+        <select id="gen-provider" onchange="updateModels()">
+          <option value="gemini">Google Gemini</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="mistral">Mistral</option>
         </select>
+      </div>
+      <div class="form-group"><label>Model</label>
+        <select id="gen-model"></select>
       </div>
       <div class="form-group"><label>API Key</label>
         <input type="password" id="gen-api-key" placeholder="Paste your provider API key">
@@ -534,8 +537,17 @@ async function loadConfig(){
     const r=await fetch(API+'/api/v1/config');configData=await r.json();
     const s=document.getElementById('gen-language');s.innerHTML='';
     for(const[k,v]of Object.entries(configData.languages))s.innerHTML+=`<option value="${k}">${v}</option>`;
-    updateFrameworks();renderRules();renderTemplates();
+    updateFrameworks();updateModels();renderRules();renderTemplates();
   }catch(e){console.error(e)}
+}
+
+function updateModels(){
+  if(!configData||!configData.models)return;
+  const provider=document.getElementById('gen-provider').value;
+  const sel=document.getElementById('gen-model');
+  const models=configData.models[provider]||[];
+  sel.innerHTML='';
+  for(const m of models)sel.innerHTML+=`<option value="${m.id}">${m.name}</option>`;
 }
 
 function updateFrameworks(){
@@ -623,6 +635,7 @@ async function loadProfile(){
 async function doGenerate(){
   if(currentMode==='review')return doReview();
   const provider=document.getElementById('gen-provider').value;
+  const model=document.getElementById('gen-model').value;
   const apiKey=document.getElementById('gen-api-key').value;
   const language=document.getElementById('gen-language').value;
   const framework=document.getElementById('gen-framework').value;
@@ -630,11 +643,12 @@ async function doGenerate(){
   const task=document.getElementById('gen-task').value;
   if(!apiKey){alert('Paste your AI provider API key');return}
   if(!task){alert('Describe what you want to build');return}
-  await streamRequest('/api/v1/generate-code',{provider,api_key:apiKey,context:{language,framework,rules},task_description:task},language);
+  await streamRequest('/api/v1/generate-code',{provider,model,api_key:apiKey,context:{language,framework,rules},task_description:task},language);
 }
 
 async function doReview(){
   const provider=document.getElementById('gen-provider').value;
+  const model=document.getElementById('gen-model').value;
   const apiKey=document.getElementById('gen-api-key').value;
   const language=document.getElementById('gen-language').value;
   const framework=document.getElementById('gen-framework').value;
@@ -644,7 +658,7 @@ async function doReview(){
   if(!apiKey){alert('Paste your AI provider API key');return}
   if(!code){alert('Paste the code you want reviewed');return}
   const fullCode=extra?code+'\n\nAdditional review instructions: '+extra:code;
-  await streamRequest('/api/v1/review-code',{provider,api_key:apiKey,context:{language,framework,rules},code:fullCode},language);
+  await streamRequest('/api/v1/review-code',{provider,model,api_key:apiKey,context:{language,framework,rules},code:fullCode},language);
 }
 
 async function streamRequest(endpoint,body,language){

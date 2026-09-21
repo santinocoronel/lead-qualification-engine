@@ -53,7 +53,7 @@ class TestCreateAnalyzer:
 
         settings = MagicMock()
         settings.gemini_api_key = "fake-key"
-        settings.gemini_model = "gemini-2.0-flash"
+        settings.gemini_model = "gemini-2.5-flash"
         settings.llm_timeout_seconds = 30
         settings.llm_max_retries = 3
         settings.llm_retry_base_delay = 1.0

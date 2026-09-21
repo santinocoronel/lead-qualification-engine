@@ -20,7 +20,7 @@ from src.domain.entities.project_context import (
     ProjectContext,
 )
 from src.domain.value_objects.enums import LLMProvider
-from src.infrastructure.llm.streaming_factory import stream_code_generation
+from src.infrastructure.llm.streaming_factory import PROVIDER_MODELS, stream_code_generation
 
 logger = structlog.get_logger(__name__)
 
@@ -43,6 +43,7 @@ class ContextPayload(BaseModel):
 
 class GenerateCodeRequest(BaseModel):
     provider: str = Field(examples=["gemini"])
+    model: str | None = Field(default=None, examples=["gemini-2.5-flash"])
     api_key: str = Field(min_length=1)
     context: ContextPayload
     task_description: str = Field(min_length=1, max_length=10000)
@@ -50,6 +51,7 @@ class GenerateCodeRequest(BaseModel):
 
 class ReviewCodeRequest(BaseModel):
     provider: str = Field(examples=["gemini"])
+    model: str | None = Field(default=None, examples=["gemini-2.5-flash"])
     api_key: str = Field(min_length=1)
     context: ContextPayload
     code: str = Field(min_length=1, max_length=50000)
@@ -62,11 +64,17 @@ class TemplateInfo(BaseModel):
     category: str
 
 
+class ModelInfo(BaseModel):
+    id: str
+    name: str
+
+
 class ConfigResponse(BaseModel):
     languages: dict[str, str]
     frameworks: dict[str, list[str]]
     rules: dict[str, str]
     providers: list[str]
+    models: dict[str, list[ModelInfo]]
     templates: dict[str, TemplateInfo]
 
 
@@ -95,12 +103,14 @@ def _sse_response(
     system_prompt: str,
     user_prompt: str,
     log_event: str,
+    model: str | None = None,
 ) -> StreamingResponse:
     async def event_stream() -> AsyncIterator[str]:
         try:
             async for chunk in stream_code_generation(
                 provider=provider, api_key=api_key,
                 system_prompt=system_prompt, user_prompt=user_prompt,
+                model=model,
             ):
                 yield f"data: {json.dumps({'content': chunk})}\n\n"
             yield f"data: {json.dumps({'done': True})}\n\n"
@@ -122,6 +132,10 @@ async def get_config() -> ConfigResponse:
         frameworks=SUPPORTED_FRAMEWORKS,
         rules=ARCHITECTURE_RULES,
         providers=sorted(_VALID_PROVIDERS),
+        models={
+            p: [ModelInfo(id=mid, name=mname) for mid, mname in ms]
+            for p, ms in PROVIDER_MODELS.items()
+        },
         templates={k: TemplateInfo(**v) for k, v in TASK_TEMPLATES.items()},
     )
 
@@ -153,6 +167,7 @@ async def generate_code(request: Request, payload: GenerateCodeRequest) -> Strea
         system_prompt=assemble_system_prompt(context),
         user_prompt=payload.task_description,
         log_event="code_generation_error",
+        model=payload.model,
     )
 
 
@@ -182,4 +197,5 @@ async def review_code(request: Request, payload: ReviewCodeRequest) -> Streaming
         system_prompt=assemble_review_prompt(context),
         user_prompt=f"Review this code:\n\n{payload.code}",
         log_event="code_review_error",
+        model=payload.model,
     )
