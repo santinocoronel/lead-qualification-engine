@@ -3,22 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LeadEngine — AI-Powered Lead Qualification</title>
+<title>AI Context Engine — Production Code from AI, Your Rules</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#09090b;--surface:#18181b;--border:#27272a;
   --text:#fafafa;--muted:#a1a1aa;--primary:#6366f1;--primary-hover:#818cf8;
-  --green:#22c55e;--amber:#f59e0b;
+  --green:#22c55e;--amber:#f59e0b;--cyan:#06b6d4;
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
 a{color:var(--primary);text-decoration:none}
 a:hover{color:var(--primary-hover)}
-
 .container{max-width:1200px;margin:0 auto;padding:0 24px}
 
-/* NAV */
 nav{border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(12px);z-index:100}
 nav .container{display:flex;justify-content:space-between;align-items:center}
 nav .logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}
@@ -32,15 +30,13 @@ nav .links a:hover{color:var(--text)}
 .btn-outline{border:1px solid var(--border);color:var(--text);background:transparent}
 .btn-outline:hover{border-color:var(--muted);background:var(--surface)}
 
-/* HERO */
 .hero{padding:100px 0 80px;text-align:center}
-.hero .badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;color:var(--primary);background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);margin-bottom:24px}
+.hero .badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;color:var(--cyan);background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);margin-bottom:24px}
 .hero h1{font-size:clamp(36px,5vw,64px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px}
-.hero h1 span{background:linear-gradient(135deg,var(--primary),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:18px;color:var(--muted);max-width:600px;margin:0 auto 40px}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),#a78bfa,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--muted);max-width:640px;margin:0 auto 40px}
 .hero .ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
-/* FEATURES */
 .features{padding:80px 0}
 .section-title{text-align:center;margin-bottom:60px}
 .section-title h2{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
@@ -51,23 +47,20 @@ nav .links a:hover{color:var(--text)}
 .feature-card h3{font-size:18px;font-weight:700;margin-bottom:8px}
 .feature-card p{color:var(--muted);font-size:14px}
 
-/* HOW IT WORKS */
 .how-it-works{padding:80px 0}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;margin-top:48px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px;margin-top:48px}
 .step{text-align:center;padding:24px}
 .step .num{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:16px}
 .step h3{font-size:16px;font-weight:700;margin-bottom:8px}
 .step p{color:var(--muted);font-size:14px}
 
-/* CODE EXAMPLE */
 .code-section{padding:60px 0}
-.code-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;overflow-x:auto;max-width:720px;margin:0 auto}
-.code-block pre{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:#e4e4e7}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:16px;padding:32px;overflow-x:auto;max-width:720px;margin:0 auto}
+.code-block pre{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:#e6edf3}
 .code-block .comment{color:#6b7280}
 .code-block .string{color:#a78bfa}
 .code-block .key{color:#60a5fa}
 
-/* PRICING */
 .pricing{padding:80px 0}
 .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1000px;margin:0 auto}
 .price-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 32px;position:relative;transition:transform .2s}
@@ -83,7 +76,6 @@ nav .links a:hover{color:var(--text)}
 .price-card li::before{content:"\2713";color:var(--green);font-weight:700}
 .price-card .btn{width:100%;text-align:center;display:block;padding:14px}
 
-/* FOOTER */
 footer{border-top:1px solid var(--border);padding:40px 0;text-align:center}
 footer p{color:var(--muted);font-size:14px}
 
@@ -98,7 +90,7 @@ footer p{color:var(--muted);font-size:14px}
 
 <nav>
 <div class="container">
-  <div class="logo">Lead<span>Engine</span></div>
+  <div class="logo">AI Context<span>Engine</span></div>
   <div class="links">
     <a href="#features">Features</a>
     <a href="#how-it-works">How It Works</a>
@@ -111,11 +103,11 @@ footer p{color:var(--muted);font-size:14px}
 
 <section class="hero">
 <div class="container">
-  <div class="badge">AI-Powered B2B Lead Scoring</div>
-  <h1>Qualify leads in <span>seconds</span>,<br>not hours</h1>
-  <p>Our AI engine scores inbound prospects across budget, urgency, technical fit, and intent clarity — so your sales team only talks to buyers ready to close.</p>
+  <div class="badge">BYOK — Bring Your Own Key</div>
+  <h1>Production code from AI,<br><span>your architecture rules</span></h1>
+  <p>Configure your stack, define strict architecture rules, and let AI generate production-ready code that follows your exact standards — streamed in real time.</p>
   <div class="ctas">
-    <a href="/dashboard.html" class="btn btn-primary">Get Started Free</a>
+    <a href="/dashboard.html" class="btn btn-primary">Start Generating Free</a>
     <a href="/docs" class="btn btn-outline">View API Docs</a>
   </div>
 </div>
@@ -124,39 +116,39 @@ footer p{color:var(--muted);font-size:14px}
 <section class="features" id="features">
 <div class="container">
   <div class="section-title">
-    <h2>Built for Scale</h2>
-    <p>Everything you need to automate lead qualification in your pipeline</p>
+    <h2>Your Rules, AI's Speed</h2>
+    <p>The intelligent middleware between you and any LLM</p>
   </div>
   <div class="features-grid">
     <div class="feature-card">
-      <div class="icon">&#x1F9E0;</div>
-      <h3>AI-Powered Scoring</h3>
-      <p>Google Gemini analyzes leads across 4 dimensions with structured JSON output. Get instant qualification scores from 0-100.</p>
+      <div class="icon">&#x1F3AF;</div>
+      <h3>Context-Aware Generation</h3>
+      <p>Select your language, framework, and architecture rules. The AI receives a precision-engineered system prompt — not a generic one.</p>
     </div>
     <div class="feature-card">
       <div class="icon">&#x26A1;</div>
-      <h3>Sub-Second API</h3>
-      <p>REST API built on FastAPI with async PostgreSQL. Handles thousands of concurrent requests with built-in rate limiting.</p>
-    </div>
-    <div class="feature-card">
-      <div class="icon">&#x1F510;</div>
-      <h3>Enterprise Auth</h3>
-      <p>SHA-256 hashed API keys, JWT authentication, per-tenant quotas, and subscription-based access control.</p>
-    </div>
-    <div class="feature-card">
-      <div class="icon">&#x1F504;</div>
-      <h3>Resilient by Design</h3>
-      <p>Exponential backoff retries, structured logging, and circuit-breaker patterns keep your pipeline running 24/7.</p>
+      <h3>Real-Time Streaming</h3>
+      <p>Watch code appear letter by letter via Server-Sent Events. No waiting for the full response — start reading immediately.</p>
     </div>
     <div class="feature-card">
       <div class="icon">&#x1F511;</div>
       <h3>Bring Your Own Key</h3>
-      <p>Use your own OpenAI, Anthropic, or Gemini API key. Skip quotas and control your AI costs directly.</p>
+      <p>Use your own OpenAI, Anthropic, or Gemini API key. Your key, your costs, your control. We never store it.</p>
     </div>
     <div class="feature-card">
-      <div class="icon">&#x1F4CA;</div>
-      <h3>Usage Analytics</h3>
-      <p>Real-time usage tracking with 80% and 95% threshold alerts. Never hit your limit without warning.</p>
+      <div class="icon">&#x1F3D7;</div>
+      <h3>Architecture Rules Engine</h3>
+      <p>Clean Architecture, SOLID, Repository Pattern, strict typing — toggle the rules you enforce and the AI follows them.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F4BB;</div>
+      <h3>8 Languages, 20+ Frameworks</h3>
+      <p>Python, TypeScript, Go, Rust, Java, C# and more. Each with their native frameworks and idiomatic patterns.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F680;</div>
+      <h3>Production-Ready Output</h3>
+      <p>No TODOs, no placeholders. Complete code with imports, types, error handling, and multi-file structure when needed.</p>
     </div>
   </div>
 </div>
@@ -166,23 +158,28 @@ footer p{color:var(--muted);font-size:14px}
 <div class="container">
   <div class="section-title">
     <h2>How It Works</h2>
-    <p>Three API calls from zero to qualified leads</p>
+    <p>From configuration to production code in seconds</p>
   </div>
   <div class="steps">
     <div class="step">
       <div class="num">1</div>
-      <h3>Register</h3>
-      <p>Create an account and get your API key instantly. Free tier includes 100 requests/month.</p>
+      <h3>Configure Stack</h3>
+      <p>Pick your language, framework, and toggle architecture rules like Clean Architecture or SOLID.</p>
     </div>
     <div class="step">
       <div class="num">2</div>
-      <h3>Send a Lead</h3>
-      <p>POST your prospect's inquiry to our endpoint — company, message, source, and metadata.</p>
+      <h3>Paste Your Key</h3>
+      <p>Bring your own API key from Gemini, OpenAI, or Anthropic. It's used once and never stored.</p>
     </div>
     <div class="step">
       <div class="num">3</div>
-      <h3>Get the Score</h3>
-      <p>Receive a structured qualification with scores, reasoning, and a recommended action in milliseconds.</p>
+      <h3>Describe the Task</h3>
+      <p>Write what you need: "Create a user auth endpoint with JWT" — be as specific as you want.</p>
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <h3>Get Streaming Code</h3>
+      <p>Watch production-ready code stream in real time, perfectly structured to your architecture rules.</p>
     </div>
   </div>
 </div>
@@ -191,20 +188,22 @@ footer p{color:var(--muted);font-size:14px}
 <section class="code-section">
 <div class="container">
   <div class="section-title">
-    <h2>Simple Integration</h2>
-    <p>One API call is all it takes</p>
+    <h2>API-First</h2>
+    <p>Integrate into your workflow with a single API call</p>
   </div>
   <div class="code-block">
-<pre><span class="comment"># Qualify a lead with a single API call</span>
-curl -X POST https://lead-qualification-engine-4ltk.onrender.com/api/v1/leads/analyze \
-  -H <span class="string">"X-API-Key: your_api_key"</span> \
+<pre><span class="comment"># Generate code with streaming via API</span>
+curl -N -X POST https://lead-qualification-engine-4ltk.onrender.com/api/v1/generate-code \
   -H <span class="string">"Content-Type: application/json"</span> \
   -d '{
-    <span class="key">"company_name"</span>: <span class="string">"Acme Corp"</span>,
-    <span class="key">"contact_name"</span>: <span class="string">"Jane Smith"</span>,
-    <span class="key">"contact_email"</span>: <span class="string">"jane@acme.com"</span>,
-    <span class="key">"message"</span>: <span class="string">"We need an enterprise solution for 500 users, budget approved for Q4"</span>,
-    <span class="key">"source"</span>: <span class="string">"website_form"</span>
+    <span class="key">"provider"</span>: <span class="string">"gemini"</span>,
+    <span class="key">"api_key"</span>: <span class="string">"your-gemini-api-key"</span>,
+    <span class="key">"context"</span>: {
+      <span class="key">"language"</span>: <span class="string">"python_3.12"</span>,
+      <span class="key">"framework"</span>: <span class="string">"fastapi"</span>,
+      <span class="key">"rules"</span>: [<span class="string">"clean_architecture"</span>, <span class="string">"strict_typing"</span>]
+    },
+    <span class="key">"task_description"</span>: <span class="string">"Create a user registration endpoint with JWT"</span>
   }'</pre>
   </div>
 </div>
@@ -214,43 +213,43 @@ curl -X POST https://lead-qualification-engine-4ltk.onrender.com/api/v1/leads/an
 <div class="container">
   <div class="section-title">
     <h2>Simple Pricing</h2>
-    <p>Start free, scale as you grow. No hidden fees.</p>
+    <p>Start free, scale as you grow. BYOK = your costs, your control.</p>
   </div>
   <div class="pricing-grid">
     <div class="price-card">
       <div class="plan-name">Free</div>
       <div class="price">$0<span>/mo</span></div>
-      <div class="price-desc">Perfect for testing and small projects</div>
+      <div class="price-desc">Perfect for trying it out</div>
       <ul>
-        <li>100 lead qualifications / month</li>
-        <li>AI scoring (4 dimensions)</li>
-        <li>REST API access</li>
-        <li>Structured JSON responses</li>
-        <li>Community support</li>
+        <li>100 generations / month</li>
+        <li>All languages &amp; frameworks</li>
+        <li>All architecture rules</li>
+        <li>SSE streaming output</li>
+        <li>BYOK (bring your own key)</li>
       </ul>
       <a href="/dashboard.html" class="btn btn-outline">Get Started</a>
     </div>
     <div class="price-card popular">
       <div class="plan-name">Pro</div>
       <div class="price">$49<span>/mo</span></div>
-      <div class="price-desc">For growing sales teams</div>
+      <div class="price-desc">For professional developers</div>
       <ul>
-        <li>5,000 lead qualifications / month</li>
+        <li>5,000 generations / month</li>
         <li>Everything in Free</li>
-        <li>BYOK (use your own AI key)</li>
-        <li>Usage alerts (80% / 95%)</li>
-        <li>Priority email support</li>
+        <li>API access for CI/CD integration</li>
+        <li>Usage analytics &amp; alerts</li>
+        <li>Priority support</li>
       </ul>
-      <a href="/dashboard.html" class="btn btn-primary">Start Pro Trial</a>
+      <a href="/dashboard.html" class="btn btn-primary">Start Pro</a>
     </div>
     <div class="price-card">
       <div class="plan-name">Agency</div>
       <div class="price">$199<span>/mo</span></div>
-      <div class="price-desc">For agencies and high-volume teams</div>
+      <div class="price-desc">For teams and agencies</div>
       <ul>
-        <li>25,000 lead qualifications / month</li>
+        <li>25,000 generations / month</li>
         <li>Everything in Pro</li>
-        <li>Multi-model support (OpenAI, Anthropic, Gemini)</li>
+        <li>Custom rules &amp; templates</li>
         <li>Webhook integrations</li>
         <li>Dedicated support + SLA</li>
       </ul>
@@ -262,7 +261,7 @@ curl -X POST https://lead-qualification-engine-4ltk.onrender.com/api/v1/leads/an
 
 <footer>
 <div class="container">
-  <p>LeadEngine &copy; 2026. Built with FastAPI, PostgreSQL & Google Gemini.</p>
+  <p>AI Context Engine &copy; 2026. Built with FastAPI, PostgreSQL &amp; multi-model AI.</p>
 </div>
 </footer>
 

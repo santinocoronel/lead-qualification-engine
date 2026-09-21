@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — LeadEngine</title>
+<title>AI Context Engine — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#09090b;--surface:#18181b;--border:#27272a;--surface-hover:#1f1f23;
   --text:#fafafa;--muted:#a1a1aa;--primary:#6366f1;--primary-hover:#818cf8;
-  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--cyan:#06b6d4;
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* AUTH SCREENS */
+/* AUTH */
 .auth-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
 .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px}
 .auth-box .logo{font-size:24px;font-weight:800;text-align:center;margin-bottom:8px}
@@ -22,49 +23,85 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .auth-box .subtitle{text-align:center;color:var(--muted);font-size:14px;margin-bottom:32px}
 .form-group{margin-bottom:20px}
 .form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--muted)}
-.form-group input,.form-group select{width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border .2s}
-.form-group input:focus,.form-group select:focus{border-color:var(--primary)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary)}
 .btn{display:block;width:100%;padding:12px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all .2s;text-align:center;font-family:inherit}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-primary:hover{background:var(--primary-hover)}
 .btn-outline{border:1px solid var(--border);color:var(--text);background:transparent;margin-top:12px}
 .btn-outline:hover{border-color:var(--muted)}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger:hover{background:#dc2626}
+.btn-sm{width:auto;padding:10px 20px;display:inline-block}
 .auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--muted)}
 .auth-switch a{color:var(--primary);cursor:pointer;text-decoration:none}
 .error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
 .success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
 
-/* DASHBOARD LAYOUT */
+/* LAYOUT */
 .dashboard{display:none}
-.top-bar{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
-.top-bar .logo{font-size:20px;font-weight:800}
+.top-bar{border-bottom:1px solid var(--border);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(9,9,11,.9);backdrop-filter:blur(12px);z-index:100}
+.top-bar .logo{font-size:18px;font-weight:800}
 .top-bar .logo span{color:var(--primary)}
-.top-bar .user-info{display:flex;align-items:center;gap:16px}
-.top-bar .user-email{font-size:13px;color:var(--muted)}
-.top-bar .logout{font-size:13px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600}
-.dash-content{max-width:900px;margin:0 auto;padding:32px 24px}
+.top-bar .right{display:flex;align-items:center;gap:16px}
+.top-bar .user-email{font-size:12px;color:var(--muted)}
+.top-bar .nav-link{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit}
+.top-bar .nav-link:hover{color:var(--text)}
+.top-bar .nav-link.active{color:var(--primary)}
+.top-bar .logout{font-size:12px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600}
+
+.page{display:none;max-width:1100px;margin:0 auto;padding:32px 24px}
+.page.active{display:block}
 
 /* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
 .card h2{font-size:18px;font-weight:700;margin-bottom:16px}
-.card h3{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--muted)}
 
-/* STATS ROW */
+/* GENERATOR PAGE */
+.gen-layout{display:grid;grid-template-columns:340px 1fr;gap:24px;min-height:calc(100vh - 140px)}
+.gen-sidebar{display:flex;flex-direction:column;gap:16px}
+.gen-output{display:flex;flex-direction:column}
+
+/* RULES CHECKBOXES */
+.rules-grid{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;padding-right:8px}
+.rule-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.rule-item:hover{border-color:var(--muted);background:var(--surface-hover)}
+.rule-item.selected{border-color:var(--primary);background:rgba(99,102,241,.08)}
+.rule-item input[type=checkbox]{margin-top:2px;accent-color:var(--primary)}
+.rule-item .rule-name{font-size:13px;font-weight:600}
+.rule-item .rule-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* CODE OUTPUT */
+.code-output{flex:1;background:#0d1117;border:1px solid var(--border);border-radius:12px;position:relative;display:flex;flex-direction:column;min-height:500px}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
+.code-header .lang-tag{font-size:12px;font-weight:600;color:var(--cyan);text-transform:uppercase}
+.code-header button{background:rgba(255,255,255,.1);color:var(--text);border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.code-header button:hover{background:rgba(255,255,255,.15)}
+.code-body{flex:1;padding:16px;overflow:auto}
+.code-body pre{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#e6edf3;white-space:pre-wrap;word-break:break-word;margin:0}
+.code-body .cursor{display:inline-block;width:8px;height:16px;background:var(--primary);animation:blink 1s infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.code-placeholder{display:flex;align-items:center;justify-content:center;flex:1;color:var(--muted);font-size:14px;text-align:center;padding:40px}
+
+/* PROMPT INPUT */
+.prompt-area{display:flex;gap:12px;align-items:flex-end}
+.prompt-area textarea{flex:1;min-height:80px;resize:vertical;font-family:inherit}
+.prompt-area .btn{width:auto;padding:12px 28px;height:fit-content}
+.generating .btn{opacity:.6;pointer-events:none}
+
+/* SETTINGS PAGE */
+.api-key-display{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
+.api-key-display code{flex:1;font-size:14px;font-family:'JetBrains Mono',monospace;word-break:break-all}
+.api-key-display button{background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
 .stat-card .label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
 .stat-card .value{font-size:28px;font-weight:800;letter-spacing:-1px}
 .stat-card .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
 
-/* API KEY */
-.api-key-display{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
-.api-key-display code{flex:1;font-size:14px;font-family:'JetBrains Mono',monospace;word-break:break-all}
-.api-key-display button{background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
-
-/* USAGE BAR */
-.usage-bar-container{margin:16px 0}
 .usage-bar{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
 .usage-bar .fill{height:100%;border-radius:6px;transition:width .5s ease}
 .usage-bar .fill.green{background:var(--green)}
@@ -72,27 +109,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .usage-bar .fill.red{background:var(--red)}
 .usage-text{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
 
-/* BYOK */
-.byok-form{display:grid;gap:16px}
-.byok-row{display:grid;grid-template-columns:1fr 2fr;gap:12px;align-items:end}
-.byok-row .form-group{margin-bottom:0}
-.byok-actions{display:flex;gap:12px;margin-top:8px}
-.byok-actions .btn{width:auto;padding:10px 24px}
-.badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
-.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
-.badge-amber{background:rgba(245,158,11,.15);color:var(--amber)}
-.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
-.badge-purple{background:rgba(99,102,241,.15);color:var(--primary)}
-
-/* LEAD TEST */
-.lead-test textarea{width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;min-height:100px;outline:none}
-.lead-test textarea:focus{border-color:var(--primary)}
-.lead-result{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px;display:none}
-.lead-result pre{font-family:'JetBrains Mono',monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
-
-@media(max-width:640px){
-  .byok-row{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
+@media(max-width:800px){
+  .gen-layout{grid-template-columns:1fr}
+  .gen-sidebar{order:1}
+  .gen-output{order:2}
 }
 </style>
 </head>
@@ -101,8 +121,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- AUTH: LOGIN -->
 <div id="auth-login" class="auth-container">
 <div class="auth-box">
-  <div class="logo">Lead<span>Engine</span></div>
-  <div class="subtitle">Sign in to your dashboard</div>
+  <div class="logo">AI Context<span>Engine</span></div>
+  <div class="subtitle">Sign in to generate production code</div>
   <div id="login-error" class="error-msg"></div>
   <div class="form-group">
     <label>Email</label>
@@ -114,7 +134,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
   <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
   <div class="auth-switch">
-    Don't have an account? <a onclick="showRegister()">Create one</a>
+    Don't have an account? <a onclick="showRegister()">Create one free</a>
   </div>
 </div>
 </div>
@@ -122,8 +142,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- AUTH: REGISTER -->
 <div id="auth-register" class="auth-container" style="display:none">
 <div class="auth-box">
-  <div class="logo">Lead<span>Engine</span></div>
-  <div class="subtitle">Create your account — it's free</div>
+  <div class="logo">AI Context<span>Engine</span></div>
+  <div class="subtitle">Create your account — start generating code in seconds</div>
   <div id="register-error" class="error-msg"></div>
   <div id="register-success" class="success-msg"></div>
   <div class="form-group">
@@ -144,16 +164,86 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- DASHBOARD -->
 <div id="dashboard" class="dashboard">
 <div class="top-bar">
-  <div class="logo">Lead<span>Engine</span></div>
-  <div class="user-info">
+  <div class="logo">AI Context<span>Engine</span></div>
+  <div class="right">
+    <button class="nav-link active" onclick="showPage('generate')" id="nav-gen">Generate</button>
+    <button class="nav-link" onclick="showPage('settings')" id="nav-set">Settings</button>
     <span class="user-email" id="dash-email"></span>
     <button class="logout" onclick="doLogout()">Sign Out</button>
   </div>
 </div>
 
-<div class="dash-content">
+<!-- PAGE: GENERATE -->
+<div id="page-generate" class="page active">
+<div class="gen-layout">
 
-  <!-- STATS -->
+  <div class="gen-sidebar">
+    <!-- PROVIDER + KEY -->
+    <div class="card">
+      <h2>AI Provider</h2>
+      <div class="form-group">
+        <label>Provider</label>
+        <select id="gen-provider">
+          <option value="gemini">Google Gemini</option>
+          <option value="openai">OpenAI (GPT-4o)</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Your API Key</label>
+        <input type="password" id="gen-api-key" placeholder="Paste your provider's API key">
+      </div>
+    </div>
+
+    <!-- STACK -->
+    <div class="card">
+      <h2>Tech Stack</h2>
+      <div class="form-group">
+        <label>Language</label>
+        <select id="gen-language" onchange="updateFrameworks()"></select>
+      </div>
+      <div class="form-group">
+        <label>Framework</label>
+        <select id="gen-framework"></select>
+      </div>
+    </div>
+
+    <!-- RULES -->
+    <div class="card">
+      <h2>Architecture Rules</h2>
+      <div class="rules-grid" id="rules-grid"></div>
+    </div>
+  </div>
+
+  <div class="gen-output">
+    <!-- PROMPT -->
+    <div class="card">
+      <div class="prompt-area" id="prompt-area">
+        <textarea id="gen-task" placeholder="Describe what you want to build... e.g. 'Create a user registration endpoint with JWT authentication and email verification'"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="generateCode()" id="gen-btn">Generate</button>
+      </div>
+    </div>
+
+    <!-- CODE OUTPUT -->
+    <div class="code-output" id="code-output">
+      <div class="code-header">
+        <span class="lang-tag" id="output-lang">output</span>
+        <button onclick="copyOutput()">Copy Code</button>
+      </div>
+      <div class="code-placeholder" id="code-placeholder">
+        Configure your stack, select rules, describe your task<br>and hit Generate to see AI-powered code here.
+      </div>
+      <div class="code-body" style="display:none" id="code-body">
+        <pre id="code-content"></pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- PAGE: SETTINGS -->
+<div id="page-settings" class="page">
   <div class="stats-row">
     <div class="stat-card">
       <div class="label">Plan</div>
@@ -172,10 +262,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
   </div>
 
-  <!-- USAGE BAR -->
   <div class="card">
     <h2>Usage</h2>
-    <div class="usage-bar-container">
+    <div style="margin:16px 0">
       <div class="usage-bar"><div class="fill green" id="usage-fill" style="width:0%"></div></div>
       <div class="usage-text">
         <span id="usage-pct">0%</span>
@@ -184,244 +273,233 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
   </div>
 
-  <!-- API KEY -->
   <div class="card">
     <h2>API Key</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Use this key in the <code>X-API-Key</code> header for all API requests.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Use this key in the <code>X-API-Key</code> header for programmatic API access.</p>
     <div class="api-key-display">
       <code id="api-key-value">••••••••••••••••••••••••••••••••</code>
       <button onclick="copyApiKey()">Copy</button>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-top:8px">Your API key was shown once at registration. If you lost it, contact support.</p>
   </div>
-
-  <!-- BYOK -->
-  <div class="card">
-    <h2>Bring Your Own Key (BYOK)</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Connect your own AI provider API key to bypass quotas and control costs.</p>
-    <div id="byok-current" style="display:none;margin-bottom:16px">
-      <span class="badge badge-purple" id="byok-badge"></span>
-      <button class="btn btn-danger" style="width:auto;padding:8px 16px;font-size:12px;margin-top:12px" onclick="removeBYOK()">Remove BYOK Key</button>
-    </div>
-    <div class="byok-form" id="byok-form">
-      <div class="byok-row">
-        <div class="form-group">
-          <label>AI Provider</label>
-          <select id="byok-provider">
-            <option value="">Select provider...</option>
-            <option value="OPENAI">OpenAI (GPT-4)</option>
-            <option value="ANTHROPIC">Anthropic (Claude)</option>
-            <option value="GEMINI">Google Gemini</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>API Key</label>
-          <input type="password" id="byok-key" placeholder="sk-... or your provider key">
-        </div>
-      </div>
-      <div class="byok-actions">
-        <button class="btn btn-primary" onclick="saveBYOK()">Save BYOK Key</button>
-      </div>
-    </div>
-    <div id="byok-error" class="error-msg" style="margin-top:12px"></div>
-    <div id="byok-success" class="success-msg" style="margin-top:12px"></div>
-  </div>
-
-  <!-- TEST LEAD -->
-  <div class="card lead-test">
-    <h2>Test Lead Qualification</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Send a test lead to see the AI scoring in action.</p>
-    <div class="form-group">
-      <label>Company Name</label>
-      <input type="text" id="test-company" placeholder="Acme Corp">
-    </div>
-    <div class="form-group">
-      <label>Contact Name</label>
-      <input type="text" id="test-contact" placeholder="Jane Smith">
-    </div>
-    <div class="form-group">
-      <label>Contact Email</label>
-      <input type="email" id="test-email" placeholder="jane@acme.com">
-    </div>
-    <div class="form-group">
-      <label>Message</label>
-      <textarea id="test-message" placeholder="We need an enterprise solution for 500 users, budget approved for Q4..."></textarea>
-    </div>
-    <button class="btn btn-primary" onclick="testLead()" id="test-btn">Analyze Lead</button>
-    <div class="lead-result" id="lead-result">
-      <pre id="lead-result-json"></pre>
-    </div>
-  </div>
-
 </div>
+
 </div>
 
 <script>
 const API = window.location.origin;
 let accessToken = localStorage.getItem('access_token');
 let apiKeyRaw = localStorage.getItem('api_key_raw');
+let configData = null;
 
-function showLogin(){
-  document.getElementById('auth-login').style.display='flex';
-  document.getElementById('auth-register').style.display='none';
-}
-function showRegister(){
-  document.getElementById('auth-login').style.display='none';
-  document.getElementById('auth-register').style.display='flex';
-}
+// --- AUTH ---
+function showLogin(){document.getElementById('auth-login').style.display='flex';document.getElementById('auth-register').style.display='none'}
+function showRegister(){document.getElementById('auth-login').style.display='none';document.getElementById('auth-register').style.display='flex'}
 
 async function doRegister(){
-  const email=document.getElementById('reg-email').value;
-  const password=document.getElementById('reg-password').value;
-  const errEl=document.getElementById('register-error');
-  const sucEl=document.getElementById('register-success');
-  errEl.style.display='none';sucEl.style.display='none';
-
+  const email=document.getElementById('reg-email').value,password=document.getElementById('reg-password').value;
+  const err=document.getElementById('register-error'),suc=document.getElementById('register-success');
+  err.style.display='none';suc.style.display='none';
   try{
     const r=await fetch(API+'/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data=await r.json();
-    if(!r.ok){errEl.textContent=data.detail||'Registration failed';errEl.style.display='block';return}
-    localStorage.setItem('api_key_raw',data.api_key);
-    apiKeyRaw=data.api_key;
-    sucEl.innerHTML='Account created! Your API Key: <strong>'+data.api_key+'</strong><br>Save this key — it won\'t be shown again.';
-    sucEl.style.display='block';
-    setTimeout(()=>{
-      const r2=doLoginDirect(email,password);
-    },2000);
-  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
+    const d=await r.json();
+    if(!r.ok){err.textContent=d.detail||'Registration failed';err.style.display='block';return}
+    localStorage.setItem('api_key_raw',d.api_key);apiKeyRaw=d.api_key;
+    suc.innerHTML='Account created! Your API Key: <strong>'+d.api_key+'</strong><br>Save it — shown only once.';suc.style.display='block';
+    setTimeout(()=>doLoginDirect(email,password),2000);
+  }catch(e){err.textContent='Network error';err.style.display='block'}
 }
 
 async function doLogin(){
-  const email=document.getElementById('login-email').value;
-  const password=document.getElementById('login-password').value;
-  await doLoginDirect(email,password);
+  await doLoginDirect(document.getElementById('login-email').value,document.getElementById('login-password').value);
 }
 
 async function doLoginDirect(email,password){
-  const errEl=document.getElementById('login-error');
-  errEl.style.display='none';
+  const err=document.getElementById('login-error');err.style.display='none';
   try{
     const r=await fetch(API+'/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data=await r.json();
-    if(!r.ok){errEl.textContent=data.detail||'Login failed';errEl.style.display='block';return}
-    localStorage.setItem('access_token',data.access_token);
-    localStorage.setItem('user_email',email);
-    accessToken=data.access_token;
-    showDashboard();
-  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
+    const d=await r.json();
+    if(!r.ok){err.textContent=d.detail||'Login failed';err.style.display='block';return}
+    localStorage.setItem('access_token',d.access_token);localStorage.setItem('user_email',email);
+    accessToken=d.access_token;showDashboard();
+  }catch(e){err.textContent='Network error';err.style.display='block'}
 }
 
-function doLogout(){
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user_email');
-  accessToken=null;
-  document.getElementById('dashboard').style.display='none';
-  showLogin();
-}
+function doLogout(){localStorage.removeItem('access_token');localStorage.removeItem('user_email');accessToken=null;document.getElementById('dashboard').style.display='none';showLogin()}
 
+// --- DASHBOARD ---
 async function showDashboard(){
-  document.getElementById('auth-login').style.display='none';
-  document.getElementById('auth-register').style.display='none';
+  document.getElementById('auth-login').style.display='none';document.getElementById('auth-register').style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('dash-email').textContent=localStorage.getItem('user_email')||'';
-  if(apiKeyRaw){document.getElementById('api-key-value').textContent=apiKeyRaw}
-  await loadProfile();
+  if(apiKeyRaw)document.getElementById('api-key-value').textContent=apiKeyRaw;
+  await Promise.all([loadConfig(),loadProfile()]);
 }
 
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+(name==='generate'?'gen':'set')).classList.add('active');
+}
+
+// --- CONFIG ---
+async function loadConfig(){
+  try{
+    const r=await fetch(API+'/api/v1/config');
+    configData=await r.json();
+    const langSel=document.getElementById('gen-language');
+    langSel.innerHTML='';
+    for(const[k,v]of Object.entries(configData.languages)){
+      langSel.innerHTML+=`<option value="${k}">${v}</option>`;
+    }
+    updateFrameworks();
+    renderRules();
+  }catch(e){console.error('config load error',e)}
+}
+
+function updateFrameworks(){
+  if(!configData)return;
+  const lang=document.getElementById('gen-language').value;
+  const fwSel=document.getElementById('gen-framework');
+  const frameworks=configData.frameworks[lang]||[];
+  fwSel.innerHTML='';
+  for(const fw of frameworks){
+    fwSel.innerHTML+=`<option value="${fw}">${fw==='none'?'No framework':fw}</option>`;
+  }
+}
+
+function renderRules(){
+  if(!configData)return;
+  const grid=document.getElementById('rules-grid');
+  grid.innerHTML='';
+  for(const[k,desc]of Object.entries(configData.rules)){
+    const name=k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    grid.innerHTML+=`
+      <label class="rule-item" id="rule-${k}" onclick="toggleRule('${k}')">
+        <input type="checkbox" value="${k}">
+        <div>
+          <div class="rule-name">${name}</div>
+          <div class="rule-desc">${desc.substring(0,120)}...</div>
+        </div>
+      </label>`;
+  }
+}
+
+function toggleRule(key){
+  const el=document.getElementById('rule-'+key);
+  const cb=el.querySelector('input');
+  cb.checked=!cb.checked;
+  el.classList.toggle('selected',cb.checked);
+}
+
+function getSelectedRules(){
+  return [...document.querySelectorAll('.rules-grid input:checked')].map(c=>c.value);
+}
+
+// --- PROFILE ---
 async function loadProfile(){
   try{
     const r=await fetch(API+'/api/v1/auth/me',{headers:{'Authorization':'Bearer '+accessToken}});
     if(r.status===401){doLogout();return}
     const d=await r.json();
-
     document.getElementById('stat-plan').textContent=d.plan_tier;
-    const statusBadge=d.subscription_status==='ACTIVE'?'badge-green':d.subscription_status==='PAST_DUE'?'badge-amber':'badge-red';
-    document.getElementById('stat-status').innerHTML='<span class="badge '+statusBadge+'">'+d.subscription_status+'</span>';
+    const sb=d.subscription_status==='ACTIVE'?'badge-green':d.subscription_status==='PAST_DUE'?'badge-amber':'badge-red';
+    document.getElementById('stat-status').innerHTML='<span class="badge '+sb+'">'+d.subscription_status+'</span>';
     document.getElementById('stat-used').textContent=d.monthly_requests_used.toLocaleString();
     document.getElementById('stat-limit').textContent='of '+d.monthly_requests_limit.toLocaleString();
-    const remaining=Math.max(0,d.monthly_requests_limit-d.monthly_requests_used);
-    document.getElementById('stat-remaining').textContent=remaining.toLocaleString();
-
+    document.getElementById('stat-remaining').textContent=Math.max(0,d.monthly_requests_limit-d.monthly_requests_used).toLocaleString();
     const pct=d.monthly_requests_limit>0?Math.round((d.monthly_requests_used/d.monthly_requests_limit)*100):0;
     const fill=document.getElementById('usage-fill');
     fill.style.width=Math.min(pct,100)+'%';
     fill.className='fill '+(pct>=95?'red':pct>=80?'amber':'green');
     document.getElementById('usage-pct').textContent=pct+'%';
     document.getElementById('usage-counts').textContent=d.monthly_requests_used.toLocaleString()+' / '+d.monthly_requests_limit.toLocaleString();
-
-    if(d.custom_llm_provider){
-      document.getElementById('byok-current').style.display='block';
-      document.getElementById('byok-badge').textContent='BYOK: '+d.custom_llm_provider;
-      document.getElementById('byok-form').style.display='none';
-    }else{
-      document.getElementById('byok-current').style.display='none';
-      document.getElementById('byok-form').style.display='grid';
-    }
   }catch(e){console.error(e)}
+}
+
+// --- GENERATE ---
+async function generateCode(){
+  const provider=document.getElementById('gen-provider').value;
+  const apiKey=document.getElementById('gen-api-key').value;
+  const language=document.getElementById('gen-language').value;
+  const framework=document.getElementById('gen-framework').value;
+  const rules=getSelectedRules();
+  const task=document.getElementById('gen-task').value;
+
+  if(!apiKey){alert('Paste your AI provider API key');return}
+  if(!task){alert('Describe what you want to build');return}
+
+  const btn=document.getElementById('gen-btn');
+  const area=document.getElementById('prompt-area');
+  btn.textContent='Generating...';area.classList.add('generating');
+
+  document.getElementById('code-placeholder').style.display='none';
+  const codeBody=document.getElementById('code-body');
+  codeBody.style.display='block';
+  const codeEl=document.getElementById('code-content');
+  codeEl.textContent='';
+
+  const langLabel=configData?.languages[language]||language;
+  document.getElementById('output-lang').textContent=langLabel;
+
+  try{
+    const resp=await fetch(API+'/api/v1/generate-code',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({provider,api_key:apiKey,context:{language,framework,rules},task_description:task})
+    });
+
+    if(!resp.ok){
+      const err=await resp.json();
+      codeEl.textContent='Error: '+(err.detail||'Request failed');
+      btn.textContent='Generate';area.classList.remove('generating');
+      return;
+    }
+
+    const reader=resp.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n\n');
+      buffer=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        try{
+          const data=JSON.parse(line.slice(6));
+          if(data.content){
+            codeEl.textContent+=data.content;
+            codeBody.scrollTop=codeBody.scrollHeight;
+          }
+          if(data.error){
+            codeEl.textContent+='\n\nError: '+data.error;
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){
+    codeEl.textContent='Connection error: '+e.message;
+  }
+
+  btn.textContent='Generate';area.classList.remove('generating');
+}
+
+function copyOutput(){
+  const code=document.getElementById('code-content').textContent;
+  if(!code)return;
+  navigator.clipboard.writeText(code);
 }
 
 function copyApiKey(){
   const v=document.getElementById('api-key-value').textContent;
   if(v.includes('••'))return;
   navigator.clipboard.writeText(v);
-  const btn=document.querySelector('.api-key-display button');
-  btn.textContent='Copied!';
-  setTimeout(()=>btn.textContent='Copy',2000);
 }
 
-async function saveBYOK(){
-  const provider=document.getElementById('byok-provider').value;
-  const key=document.getElementById('byok-key').value;
-  const errEl=document.getElementById('byok-error');
-  const sucEl=document.getElementById('byok-success');
-  errEl.style.display='none';sucEl.style.display='none';
-  if(!provider||!key){errEl.textContent='Select a provider and enter your API key.';errEl.style.display='block';return}
-  try{
-    const r=await fetch(API+'/api/v1/auth/me/byok',{method:'PUT',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({provider,api_key:key})});
-    const d=await r.json();
-    if(!r.ok){errEl.textContent=d.detail||'Failed to save';errEl.style.display='block';return}
-    sucEl.textContent='BYOK key saved! Quota limits are now bypassed.';sucEl.style.display='block';
-    await loadProfile();
-  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
-}
-
-async function removeBYOK(){
-  try{
-    const r=await fetch(API+'/api/v1/auth/me/byok',{method:'DELETE',headers:{'Authorization':'Bearer '+accessToken}});
-    if(r.ok)await loadProfile();
-  }catch(e){console.error(e)}
-}
-
-async function testLead(){
-  const key=apiKeyRaw||prompt('Enter your API key:');
-  if(!key)return;
-  const btn=document.getElementById('test-btn');
-  btn.textContent='Analyzing...';btn.disabled=true;
-  const resultEl=document.getElementById('lead-result');
-  const jsonEl=document.getElementById('lead-result-json');
-  resultEl.style.display='none';
-
-  try{
-    const r=await fetch(API+'/api/v1/leads/analyze',{
-      method:'POST',
-      headers:{'X-API-Key':key,'Content-Type':'application/json'},
-      body:JSON.stringify({
-        company_name:document.getElementById('test-company').value||'Test Corp',
-        contact_name:document.getElementById('test-contact').value||'Test User',
-        contact_email:document.getElementById('test-email').value||'test@test.com',
-        message:document.getElementById('test-message').value||'We need a solution',
-        source:'dashboard_test'
-      })
-    });
-    const d=await r.json();
-    jsonEl.textContent=JSON.stringify(d,null,2);
-    resultEl.style.display='block';
-    await loadProfile();
-  }catch(e){jsonEl.textContent='Error: '+e.message;resultEl.style.display='block'}
-  btn.textContent='Analyze Lead';btn.disabled=false;
-}
-
-// Auto-login if token exists
+// --- INIT ---
 if(accessToken){showDashboard()}
 </script>
 </body>

@@ -18,6 +18,7 @@ from src.api.middleware.error_handler import register_error_handlers
 from src.api.middleware.rate_limiter import limiter, rate_limit_exceeded_handler
 from src.api.v1.auth_router import router as auth_router
 from src.api.v1.billing_router import router as billing_router
+from src.api.v1.generate_router import router as generate_router
 from src.api.v1.health_router import router as health_router
 from src.api.v1.leads_router import router as leads_router
 from src.infrastructure.email.smtp_adapter import ConsoleEmailAdapter, SMTPEmailAdapter
@@ -154,6 +155,10 @@ def create_app() -> FastAPI:
                 "description": "Client registration, JWT login, and password management.",
             },
             {
+                "name": "Code Generation",
+                "description": "AI-powered code generation with project context, architecture rules, and SSE streaming.",
+            },
+            {
                 "name": "Billing",
                 "description": "Lemon Squeezy webhook integration for subscription lifecycle management.",
             },
@@ -187,6 +192,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(leads_router)
+    app.include_router(generate_router)
     app.include_router(billing_router)
 
     static_dir = Path(__file__).resolve().parent.parent.parent / "static"
