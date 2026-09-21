@@ -131,6 +131,15 @@ nav .links a:hover{color:var(--text)}
 .sec-card h3{font-size:14px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px}
 .sec-card p{font-size:12px;color:var(--text-secondary);line-height:1.6}
 
+/* PRICING INTRO */
+.pricing-intro{text-align:center;max-width:760px;margin:0 auto 0}
+.pricing-intro .tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--primary);margin-bottom:12px}
+.pricing-intro h2{font-size:clamp(26px,3.5vw,38px);font-weight:800;letter-spacing:-1px;line-height:1.2;margin-bottom:32px}
+.intro-text{text-align:left;max-width:680px;margin:0 auto}
+.intro-text p{font-size:15px;color:var(--text-secondary);line-height:1.8;margin-bottom:18px}
+.intro-text p strong{color:var(--text);font-weight:700}
+.intro-text p em{color:var(--green);font-style:normal;font-weight:600}
+
 /* CTA */
 .cta-section{padding:100px 0;text-align:center;position:relative}
 .cta-section::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.06) 0%,transparent 70%);pointer-events:none}
@@ -337,10 +346,22 @@ curl -N -X POST /api/v1/generate-code \
 
 <section class="pricing" id="pricing">
 <div class="container">
-  <div class="section-label">
+
+  <!-- INTRO: What is AI Context Engine -->
+  <div class="pricing-intro">
+    <div class="tag">Why AI Context Engine</div>
+    <h2>Stop getting generic AI code.<br>Start getting <span style="color:var(--primary)">production-ready</span> code.</h2>
+    <div class="intro-text">
+      <p><strong>The problem:</strong> when you ask ChatGPT, Copilot, or any AI to write code, you get generic output. No architecture. No typing. No patterns. You spend more time fixing the AI's code than writing it yourself.</p>
+      <p><strong>AI Context Engine solves this.</strong> You configure your exact tech stack — language, framework, and strict architecture rules like Clean Architecture, SOLID, CQRS, or Repository Pattern — and the AI generates code that <em>actually follows your standards</em>. Production-ready. With imports, types, error handling, and multi-file structure. Streamed to your screen in real time.</p>
+      <p>Bring your own API key from OpenAI, Anthropic, or Google Gemini. We never store it. You control the costs. We provide the intelligence layer that turns a generic LLM into <strong>your team's senior engineer</strong>.</p>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:64px">
     <div class="tag">Plans</div>
     <h2>Simple, Transparent Pricing</h2>
-    <p>Start free, scale as your team grows. BYOK means you control AI costs.</p>
+    <p>Start free, no credit card. Scale when you need more generations.</p>
   </div>
   <div class="pricing-grid">
     <div class="price-card">
