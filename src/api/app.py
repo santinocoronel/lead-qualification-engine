@@ -197,6 +197,10 @@ def create_app() -> FastAPI:
         async def dashboard_page() -> FileResponse:
             return FileResponse(static_dir / "dashboard.html")
 
+        @app.get("/checkout.html", include_in_schema=False)
+        async def checkout_page() -> FileResponse:
+            return FileResponse(static_dir / "checkout.html")
+
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
     return app
