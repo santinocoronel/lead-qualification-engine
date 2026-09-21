@@ -31,3 +31,5 @@ class LLMProvider(StrEnum):
     GEMINI = "gemini"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+    DEEPSEEK = "deepseek"
+    MISTRAL = "mistral"

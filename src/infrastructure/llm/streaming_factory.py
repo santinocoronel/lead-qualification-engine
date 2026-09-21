@@ -26,6 +26,12 @@ async def stream_code_generation(
         case "anthropic":
             async for chunk in _stream_anthropic(api_key, system_prompt, user_prompt):
                 yield chunk
+        case "deepseek":
+            async for chunk in _stream_deepseek(api_key, system_prompt, user_prompt):
+                yield chunk
+        case "mistral":
+            async for chunk in _stream_mistral(api_key, system_prompt, user_prompt):
+                yield chunk
         case _:
             raise LLMProviderError(f"Unsupported provider: {provider}")
 
@@ -143,3 +149,93 @@ async def _stream_anthropic(
     except Exception as exc:
         logger.error("anthropic_stream_error", error=str(exc))
         raise LLMProviderError(f"Anthropic streaming error: {exc}") from exc
+
+
+async def _stream_deepseek(
+    api_key: str, system_prompt: str, user_prompt: str
+) -> AsyncIterator[str]:
+    import json
+
+    try:
+        async with httpx.AsyncClient(timeout=120) as client:
+            async with client.stream(
+                "POST",
+                "https://api.deepseek.com/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json={
+                    "model": "deepseek-coder",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "stream": True,
+                    "temperature": 0.2,
+                },
+            ) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data = line[6:]
+                    if data == "[DONE]":
+                        break
+                    try:
+                        parsed = json.loads(data)
+                        delta = parsed["choices"][0].get("delta", {})
+                        content = delta.get("content", "")
+                        if content:
+                            yield content
+                    except (json.JSONDecodeError, KeyError, IndexError):
+                        continue
+    except httpx.HTTPStatusError as exc:
+        raise LLMProviderError(f"DeepSeek API error: {exc.response.status_code}") from exc
+    except LLMProviderError:
+        raise
+    except Exception as exc:
+        logger.error("deepseek_stream_error", error=str(exc))
+        raise LLMProviderError(f"DeepSeek streaming error: {exc}") from exc
+
+
+async def _stream_mistral(
+    api_key: str, system_prompt: str, user_prompt: str
+) -> AsyncIterator[str]:
+    import json
+
+    try:
+        async with httpx.AsyncClient(timeout=120) as client:
+            async with client.stream(
+                "POST",
+                "https://api.mistral.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json={
+                    "model": "codestral-latest",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "stream": True,
+                    "temperature": 0.2,
+                },
+            ) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data = line[6:]
+                    if data == "[DONE]":
+                        break
+                    try:
+                        parsed = json.loads(data)
+                        delta = parsed["choices"][0].get("delta", {})
+                        content = delta.get("content", "")
+                        if content:
+                            yield content
+                    except (json.JSONDecodeError, KeyError, IndexError):
+                        continue
+    except httpx.HTTPStatusError as exc:
+        raise LLMProviderError(f"Mistral API error: {exc.response.status_code}") from exc
+    except LLMProviderError:
+        raise
+    except Exception as exc:
+        logger.error("mistral_stream_error", error=str(exc))
+        raise LLMProviderError(f"Mistral streaming error: {exc}") from exc

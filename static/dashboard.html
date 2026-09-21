@@ -20,11 +20,9 @@
 }
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--primary);color:#fff}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
 
-/* ── AUTH ── */
+/* AUTH */
 .auth-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at 50% 0%,rgba(99,102,241,.06) 0%,transparent 60%)}
 .auth-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 44px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .auth-box .logo{font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;letter-spacing:-.5px}
@@ -47,11 +45,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .btn-ghost.active{color:var(--primary);background:var(--primary-muted)}
 .auth-switch{text-align:center;margin-top:20px;font-size:12px;color:var(--text-secondary)}
 .auth-switch a{color:var(--primary);cursor:pointer;text-decoration:none;font-weight:500}
-.auth-switch a:hover{text-decoration:underline}
 .error-msg{background:var(--red-muted);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:10px 14px;border-radius:var(--radius);font-size:12px;margin-bottom:16px;display:none}
 .success-msg{background:var(--green-muted);border:1px solid rgba(16,185,129,.25);color:var(--green);padding:10px 14px;border-radius:var(--radius);font-size:12px;margin-bottom:16px;display:none}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 .dashboard{display:none}
 .top-bar{border-bottom:1px solid var(--border);padding:0 24px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;background:rgba(10,10,12,.92);backdrop-filter:blur(16px);z-index:100}
 .top-bar .logo{font-size:16px;font-weight:800;letter-spacing:-.4px}
@@ -62,33 +59,35 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .top-bar .user-pill .avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700}
 .top-bar .logout-btn{font-size:11px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600;padding:6px 10px;border-radius:6px;transition:background .15s}
 .top-bar .logout-btn:hover{background:var(--red-muted)}
-
 .page{display:none;max-width:1200px;margin:0 auto;padding:24px}
 .page.active{display:block}
 
-/* ── CARDS ── */
+/* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .card-header h2{font-size:14px;font-weight:700;letter-spacing:-.2px}
-.card-header .badge{font-size:10px}
 
-/* ── GENERATOR ── */
-.gen-layout{display:grid;grid-template-columns:320px 1fr;gap:20px;min-height:calc(100vh - 120px)}
-.gen-sidebar{display:flex;flex-direction:column;gap:16px}
-
-/* Section labels */
+/* SECTION LABELS */
 .section-label{display:flex;align-items:center;gap:8px;margin-bottom:14px}
 .section-label .icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .section-label h2{font-size:13px;font-weight:700;letter-spacing:-.2px}
 .section-label .count{font-size:10px;color:var(--text-secondary);background:var(--bg);padding:2px 8px;border-radius:10px;font-weight:600}
-
 .icon-provider{background:var(--cyan-muted);color:var(--cyan)}
 .icon-stack{background:var(--amber-muted);color:var(--amber)}
 .icon-rules{background:var(--primary-muted);color:var(--primary)}
-.icon-security{background:var(--green-muted);color:var(--green)}
 
-/* Rules */
-.rules-grid{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;padding-right:4px}
+/* TABS */
+.mode-tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;border:1px solid var(--border)}
+.mode-tab{flex:1;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;color:var(--text-secondary);border:none;background:transparent;font-family:inherit}
+.mode-tab:hover{color:var(--text)}
+.mode-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+
+/* GENERATOR LAYOUT */
+.gen-layout{display:grid;grid-template-columns:320px 1fr;gap:20px;min-height:calc(100vh - 120px)}
+.gen-sidebar{display:flex;flex-direction:column;gap:16px}
+
+/* RULES */
+.rules-grid{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;padding-right:4px}
 .rule-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--bg)}
 .rule-item:hover{border-color:#3a3a42;background:var(--surface-hover)}
 .rule-item.selected{border-color:var(--primary);background:var(--primary-muted)}
@@ -101,24 +100,38 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .tag-infra{background:var(--cyan-muted);color:var(--cyan)}
 .tag-security{background:var(--amber-muted);color:var(--amber)}
 
-/* Code output */
+/* TEMPLATES */
+.templates-grid{display:grid;grid-template-columns:1fr;gap:8px;max-height:none;overflow-y:auto;padding-right:4px}
+.template-item{padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--bg)}
+.template-item:hover{border-color:var(--primary);background:var(--primary-muted)}
+.template-item .t-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.template-item .t-desc{font-size:11px;color:var(--text-secondary);line-height:1.6}
+.template-item .t-cat{display:inline-block;font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;margin-top:8px;text-transform:uppercase;letter-spacing:.3px;background:var(--cyan-muted);color:var(--cyan)}
+
+/* CODE OUTPUT */
 .gen-main{display:flex;flex-direction:column;gap:16px}
 .prompt-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
 .prompt-row{display:flex;gap:12px;align-items:flex-end}
 .prompt-row textarea{flex:1;min-height:72px;resize:vertical;font-family:inherit;font-size:13px;line-height:1.6;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;transition:border .2s,box-shadow .2s}
 .prompt-row textarea:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--primary-muted)}
 .prompt-row textarea::placeholder{color:#555}
+.prompt-btns{display:flex;flex-direction:column;gap:8px}
 .generate-btn{padding:12px 28px;height:fit-content;white-space:nowrap;font-size:13px}
 .generate-btn svg{width:16px;height:16px;fill:currentColor}
 .generating .generate-btn{opacity:.5;pointer-events:none}
+.shortcut-hint{font-size:9px;color:var(--text-secondary);text-align:center;font-weight:500}
+
+/* Review textarea */
+.review-input{display:none}
+.review-input textarea{width:100%;min-height:180px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;padding:14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;transition:border .2s,box-shadow .2s;tab-size:4}
+.review-input textarea:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--primary-muted)}
+.review-label{font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
 
 .code-output{flex:1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;min-height:460px;overflow:hidden}
 .code-toolbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
 .code-toolbar .left{display:flex;align-items:center;gap:8px}
 .code-toolbar .dot{width:8px;height:8px;border-radius:50%}
-.code-toolbar .dot-red{background:#ff5f57}
-.code-toolbar .dot-yellow{background:#ffbd2e}
-.code-toolbar .dot-green{background:#28c840}
+.code-toolbar .dot-red{background:#ff5f57}.code-toolbar .dot-yellow{background:#ffbd2e}.code-toolbar .dot-green{background:#28c840}
 .code-toolbar .lang-tag{font-size:11px;font-weight:600;color:var(--cyan);margin-left:8px;text-transform:uppercase;letter-spacing:.5px}
 .code-toolbar .status-tag{font-size:10px;font-weight:600;padding:3px 10px;border-radius:10px;letter-spacing:.3px}
 .status-idle{background:var(--surface-hover);color:var(--text-secondary)}
@@ -126,18 +139,23 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .status-done{background:var(--green-muted);color:var(--green)}
 .status-error{background:var(--red-muted);color:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-.code-toolbar button{background:rgba(255,255,255,.06);color:var(--text-secondary);border:1px solid var(--border);padding:5px 14px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:5px}
-.code-toolbar button:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.toolbar-btns{display:flex;gap:6px}
+.toolbar-btn{background:rgba(255,255,255,.06);color:var(--text-secondary);border:1px solid var(--border);padding:5px 14px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:5px}
+.toolbar-btn:hover{background:rgba(255,255,255,.1);color:var(--text)}
 .code-body{flex:1;padding:20px;overflow:auto}
 .code-body pre{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#c9d1d9;white-space:pre-wrap;word-break:break-word;margin:0;tab-size:4}
-.code-body .cursor-blink{display:inline-block;width:7px;height:15px;background:var(--primary);animation:blink .8s infinite;vertical-align:text-bottom;margin-left:1px}
-@keyframes blink{0%,45%{opacity:1}50%,100%{opacity:0}}
 .code-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--text-secondary);font-size:13px;text-align:center;padding:60px 40px;gap:12px}
 .code-placeholder .ph-icon{font-size:40px;opacity:.3;margin-bottom:8px}
 .code-placeholder .ph-title{font-size:14px;font-weight:600;color:var(--text)}
 .code-placeholder .ph-sub{font-size:12px;color:var(--text-secondary);max-width:320px;line-height:1.6}
 
-/* ── SETTINGS ── */
+/* SECURITY BANNER */
+.security-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius);background:var(--green-muted);border:1px solid rgba(16,185,129,.15);margin-bottom:16px}
+.security-banner .shield{font-size:18px}
+.security-banner p{font-size:11px;color:var(--green);line-height:1.5;font-weight:500}
+.security-banner strong{font-weight:700}
+
+/* SETTINGS */
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
 .stat-card .label{font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
@@ -147,29 +165,18 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .badge-green{background:var(--green-muted);color:var(--green)}
 .badge-amber{background:var(--amber-muted);color:var(--amber)}
 .badge-red{background:var(--red-muted);color:var(--red)}
-
 .usage-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
 .usage-bar .fill{height:100%;border-radius:4px;transition:width .6s ease}
-.usage-bar .fill.green{background:var(--green)}
-.usage-bar .fill.amber{background:var(--amber)}
-.usage-bar .fill.red{background:var(--red)}
+.usage-bar .fill.green{background:var(--green)}.usage-bar .fill.amber{background:var(--amber)}.usage-bar .fill.red{background:var(--red)}
 .usage-text{display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-top:8px;font-weight:500}
-
 .api-key-box{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px}
 .api-key-box code{flex:1;font-size:13px;font-family:'JetBrains Mono',monospace;word-break:break-all;color:var(--text-secondary)}
 .api-key-box button{background:var(--primary);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
 .api-key-box button:hover{background:var(--primary-hover)}
 
-/* ── SECURITY BANNER ── */
-.security-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius);background:var(--green-muted);border:1px solid rgba(16,185,129,.15);margin-bottom:16px}
-.security-banner .shield{font-size:18px}
-.security-banner p{font-size:11px;color:var(--green);line-height:1.5;font-weight:500}
-.security-banner strong{font-weight:700}
-
 @media(max-width:860px){
   .gen-layout{grid-template-columns:1fr}
-  .gen-sidebar{order:1}
-  .gen-main{order:2}
+  .gen-sidebar{order:1}.gen-main{order:2}
   .top-bar .user-pill{display:none}
 }
 </style>
@@ -209,12 +216,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div class="logo">AI Context<span>Engine</span></div>
   <div class="right">
     <button class="btn-ghost active" onclick="showPage('generate')" id="nav-gen">Generate</button>
+    <button class="btn-ghost" onclick="showPage('templates')" id="nav-tpl">Templates</button>
     <button class="btn-ghost" onclick="showPage('settings')" id="nav-set">Settings</button>
     <div class="divider"></div>
-    <div class="user-pill">
-      <div class="avatar" id="user-avatar">S</div>
-      <span id="dash-email"></span>
-    </div>
+    <div class="user-pill"><div class="avatar" id="user-avatar">S</div><span id="dash-email"></span></div>
     <button class="logout-btn" onclick="doLogout()">Logout</button>
   </div>
 </div>
@@ -223,10 +228,15 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 <div id="page-generate" class="page active">
 <div class="security-banner">
   <span class="shield">&#x1F6E1;</span>
-  <p><strong>Your API key is never stored.</strong> It is sent directly to the AI provider per-request and discarded immediately. All traffic is encrypted via TLS 1.3.</p>
+  <p><strong>Your API key is never stored.</strong> Sent directly to the AI provider per-request and discarded. All traffic encrypted via TLS 1.3.</p>
 </div>
 <div class="gen-layout">
   <div class="gen-sidebar">
+    <!-- MODE TABS -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('generate')">Generate Code</button>
+      <button class="mode-tab" onclick="setMode('review')">Review Code</button>
+    </div>
 
     <!-- PROVIDER -->
     <div class="card">
@@ -239,6 +249,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
           <option value="gemini">Google Gemini 2.0 Flash</option>
           <option value="openai">OpenAI GPT-4o</option>
           <option value="anthropic">Anthropic Claude Sonnet 4</option>
+          <option value="deepseek">DeepSeek Coder</option>
+          <option value="mistral">Mistral Codestral</option>
         </select>
       </div>
       <div class="form-group"><label>API Key</label>
@@ -265,18 +277,26 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
       </div>
       <div class="rules-grid" id="rules-grid"></div>
     </div>
-
   </div>
 
   <div class="gen-main">
+    <!-- REVIEW INPUT (hidden by default) -->
+    <div class="review-input" id="review-input">
+      <div class="review-label">Paste the code you want reviewed</div>
+      <textarea id="review-code" placeholder="Paste your code here...&#10;&#10;The AI will review it against your selected architecture rules and provide a detailed analysis with severity levels, specific issues, and concrete fixes."></textarea>
+    </div>
+
     <!-- PROMPT -->
     <div class="prompt-card" id="prompt-area">
       <div class="prompt-row">
         <textarea id="gen-task" placeholder="Describe what you want to build...&#10;&#10;Example: Create a user registration endpoint with JWT authentication, bcrypt password hashing, and email verification flow."></textarea>
-        <button class="btn btn-primary btn-sm generate-btn" onclick="generateCode()" id="gen-btn">
-          <svg viewBox="0 0 16 16"><path d="M8 1a.5.5 0 01.5.5v5h5a.5.5 0 010 1h-5v5a.5.5 0 01-1 0v-5h-5a.5.5 0 010-1h5v-5A.5.5 0 018 1z" fill="currentColor"/></svg>
-          Generate
-        </button>
+        <div class="prompt-btns">
+          <button class="btn btn-primary btn-sm generate-btn" onclick="doGenerate()" id="gen-btn">
+            <svg viewBox="0 0 16 16"><path d="M8 1a.5.5 0 01.5.5v5h5a.5.5 0 010 1h-5v5a.5.5 0 01-1 0v-5h-5a.5.5 0 010-1h5v-5A.5.5 0 018 1z" fill="currentColor"/></svg>
+            <span id="gen-btn-label">Generate</span>
+          </button>
+          <div class="shortcut-hint">Ctrl + Enter</div>
+        </div>
       </div>
     </div>
 
@@ -284,16 +304,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="code-output">
       <div class="code-toolbar">
         <div class="left">
-          <span class="dot dot-red"></span>
-          <span class="dot dot-yellow"></span>
-          <span class="dot dot-green"></span>
+          <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
           <span class="lang-tag" id="output-lang">output</span>
           <span class="status-tag status-idle" id="status-tag">Ready</span>
         </div>
-        <button onclick="copyOutput()">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V2zm2-1a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V2a1 1 0 00-1-1H6zM2 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1v-1h1v1a2 2 0 01-2 2H2a2 2 0 01-2-2V6a2 2 0 012-2h1v1H2z"/></svg>
-          Copy
-        </button>
+        <div class="toolbar-btns">
+          <button class="toolbar-btn" onclick="downloadOutput()" title="Download as file">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 01.5.5v2.5A1.1 1.1 0 002.1 14h11.8a1.1 1.1 0 001.1-1.1V10.4a.5.5 0 011 0v2.5A2.1 2.1 0 0113.9 15H2.1A2.1 2.1 0 010 12.9V10.4a.5.5 0 01.5-.5z"/><path d="M7.646 11.854a.5.5 0 00.708 0l3-3a.5.5 0 00-.708-.708L8.5 10.293V1.5a.5.5 0 00-1 0v8.793L5.354 8.146a.5.5 0 10-.708.708l3 3z"/></svg>
+            Download
+          </button>
+          <button class="toolbar-btn" onclick="copyOutput()">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V2zm2-1a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V2a1 1 0 00-1-1H6zM2 5a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1v-1h1v1a2 2 0 01-2 2H2a2 2 0 01-2-2V6a2 2 0 012-2h1v1H2z"/></svg>
+            Copy
+          </button>
+        </div>
       </div>
       <div class="code-placeholder" id="code-placeholder">
         <div class="ph-icon">&#x1F4BB;</div>
@@ -308,12 +332,25 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 </div>
 </div>
 
+<!-- PAGE: TEMPLATES -->
+<div id="page-templates" class="page">
+  <div class="card">
+    <div class="card-header">
+      <h2>Task Templates</h2>
+      <span class="badge badge-green" id="tpl-count">0 templates</span>
+    </div>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7">One-click templates for common development tasks. Click any template to load it into the Generate tab with the prompt pre-filled. Each template is a battle-tested prompt that produces complete, production-ready code following your selected architecture rules.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="cat-filters"></div>
+    <div class="templates-grid" id="templates-grid"></div>
+  </div>
+</div>
+
 <!-- PAGE: SETTINGS -->
 <div id="page-settings" class="page">
   <div class="stats-row">
-    <div class="stat-card"><div class="label">Plan</div><div class="value" id="stat-plan">—</div><div class="sub" id="stat-status"></div></div>
-    <div class="stat-card"><div class="label">Requests Used</div><div class="value" id="stat-used">—</div><div class="sub" id="stat-limit"></div></div>
-    <div class="stat-card"><div class="label">Remaining</div><div class="value" id="stat-remaining">—</div><div class="sub">this billing cycle</div></div>
+    <div class="stat-card"><div class="label">Plan</div><div class="value" id="stat-plan">--</div><div class="sub" id="stat-status"></div></div>
+    <div class="stat-card"><div class="label">Requests Used</div><div class="value" id="stat-used">--</div><div class="sub" id="stat-limit"></div></div>
+    <div class="stat-card"><div class="label">Remaining</div><div class="value" id="stat-remaining">--</div><div class="sub">this billing cycle</div></div>
   </div>
   <div class="card">
     <div class="card-header"><h2>Usage</h2></div>
@@ -324,8 +361,17 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="card-header"><h2>API Key</h2><span class="badge badge-green">Active</span></div>
     <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px">Use this key in the <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">X-API-Key</code> header for programmatic API access.</p>
     <div class="api-key-box">
-      <code id="api-key-value">••••••••••••••••••••••••••••••••</code>
+      <code id="api-key-value">Shown only at registration</code>
       <button onclick="copyApiKey()">Copy</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>API Endpoints</h2></div>
+    <div style="font-size:12px;color:var(--text-secondary);line-height:2.2">
+      <div><code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px;color:var(--green);font-weight:600">POST</code> <code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px">/api/v1/generate-code</code> Generate code with streaming</div>
+      <div><code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px;color:var(--cyan);font-weight:600">POST</code> <code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px">/api/v1/review-code</code> Review code against architecture rules</div>
+      <div><code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px;color:var(--amber);font-weight:600">GET</code> <code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px">/api/v1/config</code> Languages, frameworks, rules, templates</div>
+      <div><code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px;color:var(--amber);font-weight:600">GET</code> <code style="background:var(--bg);padding:3px 8px;border-radius:4px;font-size:11px">/api/v1/auth/me</code> Profile, plan, usage stats</div>
     </div>
   </div>
 </div>
@@ -337,10 +383,12 @@ const API=window.location.origin;
 let accessToken=localStorage.getItem('access_token');
 let apiKeyRaw=localStorage.getItem('api_key_raw');
 let configData=null;
+let currentMode='generate';
 
 const RULE_TAGS={clean_architecture:'arch',solid_principles:'arch',cqrs_pattern:'arch',event_driven:'arch',microservices_patterns:'arch',repository_pattern:'arch',dependency_injection:'arch',functional_patterns:'arch',strict_typing:'quality',error_handling:'quality',testing_strategy:'quality',dto_validation:'quality',documentation_first:'quality',api_versioning:'quality',async_patterns:'infra',database_patterns:'infra',container_ready:'infra',logging_observability:'infra',rate_limiting_throttling:'infra',security_best_practices:'security'};
 const TAG_LABELS={arch:'Architecture',quality:'Quality',infra:'Infrastructure',security:'Security'};
 const TAG_CLASSES={arch:'tag-arch',quality:'tag-quality',infra:'tag-infra',security:'tag-security'};
+const CAT_LABELS={auth:'Auth',backend:'Backend',realtime:'Realtime',infra:'Infrastructure',testing:'Testing',devops:'DevOps',arch:'Architecture'};
 
 function showLogin(){document.getElementById('auth-login').style.display='flex';document.getElementById('auth-register').style.display='none'}
 function showRegister(){document.getElementById('auth-login').style.display='none';document.getElementById('auth-register').style.display='flex'}
@@ -386,9 +434,28 @@ async function showDashboard(){
 
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  document.querySelectorAll('.btn-ghost').forEach(n=>n.classList.remove('active'));
-  document.getElementById('nav-'+(name==='generate'?'gen':'set')).classList.add('active');
+  const map={generate:'page-generate',templates:'page-templates',settings:'page-settings'};
+  document.getElementById(map[name]).classList.add('active');
+  document.querySelectorAll('.top-bar .btn-ghost').forEach(n=>n.classList.remove('active'));
+  const navMap={generate:'nav-gen',templates:'nav-tpl',settings:'nav-set'};
+  document.getElementById(navMap[name]).classList.add('active');
+}
+
+function setMode(mode){
+  currentMode=mode;
+  document.querySelectorAll('.mode-tab').forEach((t,i)=>t.classList.toggle('active',i===(mode==='generate'?0:1)));
+  document.getElementById('review-input').style.display=mode==='review'?'block':'none';
+  document.getElementById('gen-task').placeholder=mode==='review'
+    ?'(Optional) Add specific review instructions...\n\nExample: Focus on error handling and SQL injection vulnerabilities.'
+    :'Describe what you want to build...\n\nExample: Create a user registration endpoint with JWT authentication, bcrypt password hashing, and email verification flow.';
+  document.getElementById('gen-btn-label').textContent=mode==='review'?'Review':'Generate';
+  const ph=document.getElementById('code-placeholder');
+  if(ph.style.display!=='none'){
+    ph.querySelector('.ph-title').textContent=mode==='review'?'Ready to review':'Ready to generate';
+    ph.querySelector('.ph-sub').textContent=mode==='review'
+      ?'Paste your code above, select architecture rules to enforce, and hit Review. The AI will analyze your code and provide detailed feedback with severity levels and concrete fixes.'
+      :'Configure your tech stack, select architecture rules, describe your task and hit Generate. The AI will stream production-ready code in real time.';
+  }
 }
 
 async function loadConfig(){
@@ -396,7 +463,7 @@ async function loadConfig(){
     const r=await fetch(API+'/api/v1/config');configData=await r.json();
     const s=document.getElementById('gen-language');s.innerHTML='';
     for(const[k,v]of Object.entries(configData.languages))s.innerHTML+=`<option value="${k}">${v}</option>`;
-    updateFrameworks();renderRules();
+    updateFrameworks();renderRules();renderTemplates();
   }catch(e){console.error(e)}
 }
 
@@ -415,10 +482,45 @@ function renderRules(){
     g.innerHTML+=`<label class="rule-item" id="rule-${k}" onclick="event.preventDefault();toggleRule('${k}')">
       <input type="checkbox" value="${k}">
       <div><div class="rule-name">${name}</div>
-      <div class="rule-desc">${desc.substring(0,100)}...</div>
+      <div class="rule-desc">${desc.substring(0,90)}...</div>
       <span class="rule-tag ${TAG_CLASSES[tag]}">${TAG_LABELS[tag]}</span></div></label>`;
   }
   updateRulesCount();
+}
+
+function renderTemplates(){
+  if(!configData||!configData.templates)return;
+  const grid=document.getElementById('templates-grid');
+  const filters=document.getElementById('cat-filters');
+  grid.innerHTML='';filters.innerHTML='';
+  const tpls=configData.templates;
+  const cats=new Set();
+  for(const v of Object.values(tpls))cats.add(v.category);
+  filters.innerHTML='<button class="btn-ghost active" onclick="filterTemplates(\'all\',this)">All</button>';
+  for(const c of cats)filters.innerHTML+=`<button class="btn-ghost" onclick="filterTemplates('${c}',this)">${CAT_LABELS[c]||c}</button>`;
+  for(const[k,v]of Object.entries(tpls)){
+    grid.innerHTML+=`<div class="template-item" data-cat="${v.category}" onclick="useTemplate('${k}')">
+      <div class="t-name">${v.name}</div>
+      <div class="t-desc">${v.description}</div>
+      <span class="t-cat">${CAT_LABELS[v.category]||v.category}</span></div>`;
+  }
+  document.getElementById('tpl-count').textContent=Object.keys(tpls).length+' templates';
+}
+
+function filterTemplates(cat,btn){
+  document.querySelectorAll('#cat-filters .btn-ghost').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.template-item').forEach(t=>{
+    t.style.display=(cat==='all'||t.dataset.cat===cat)?'block':'none';
+  });
+}
+
+function useTemplate(key){
+  if(!configData||!configData.templates)return;
+  const tpl=configData.templates[key];
+  document.getElementById('gen-task').value=tpl.prompt;
+  setMode('generate');
+  showPage('generate');
 }
 
 function toggleRule(key){
@@ -447,7 +549,8 @@ async function loadProfile(){
   }catch(e){console.error(e)}
 }
 
-async function generateCode(){
+async function doGenerate(){
+  if(currentMode==='review')return doReview();
   const provider=document.getElementById('gen-provider').value;
   const apiKey=document.getElementById('gen-api-key').value;
   const language=document.getElementById('gen-language').value;
@@ -456,24 +559,38 @@ async function generateCode(){
   const task=document.getElementById('gen-task').value;
   if(!apiKey){alert('Paste your AI provider API key');return}
   if(!task){alert('Describe what you want to build');return}
+  await streamRequest('/api/v1/generate-code',{provider,api_key:apiKey,context:{language,framework,rules},task_description:task},language);
+}
 
+async function doReview(){
+  const provider=document.getElementById('gen-provider').value;
+  const apiKey=document.getElementById('gen-api-key').value;
+  const language=document.getElementById('gen-language').value;
+  const framework=document.getElementById('gen-framework').value;
+  const rules=getSelectedRules();
+  const code=document.getElementById('review-code').value;
+  const extra=document.getElementById('gen-task').value;
+  if(!apiKey){alert('Paste your AI provider API key');return}
+  if(!code){alert('Paste the code you want reviewed');return}
+  const fullCode=extra?code+'\n\nAdditional review instructions: '+extra:code;
+  await streamRequest('/api/v1/review-code',{provider,api_key:apiKey,context:{language,framework,rules},code:fullCode},language);
+}
+
+async function streamRequest(endpoint,body,language){
   const btn=document.getElementById('gen-btn'),area=document.getElementById('prompt-area');
   const statusTag=document.getElementById('status-tag');
-  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="spin"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity=".2"/><path d="M8 0a8 8 0 018 8h-1A7 7 0 008 1V0z"/></svg> Generating...';
+  const origLabel=document.getElementById('gen-btn-label').textContent;
+  btn.querySelector('#gen-btn-label').textContent='Working...';
   area.classList.add('generating');
   statusTag.textContent='Streaming';statusTag.className='status-tag status-streaming';
-
   document.getElementById('code-placeholder').style.display='none';
   const codeBody=document.getElementById('code-body');codeBody.style.display='block';
   const codeEl=document.getElementById('code-content');codeEl.textContent='';
   document.getElementById('output-lang').textContent=configData?.languages[language]||language;
 
   try{
-    const resp=await fetch(API+'/api/v1/generate-code',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({provider,api_key:apiKey,context:{language,framework,rules},task_description:task})
-    });
-    if(!resp.ok){const err=await resp.json();codeEl.textContent='Error: '+(err.detail||'Request failed');statusTag.textContent='Error';statusTag.className='status-tag status-error';btn.innerHTML='<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 1a.5.5 0 01.5.5v5h5a.5.5 0 010 1h-5v5a.5.5 0 01-1 0v-5h-5a.5.5 0 010-1h5v-5A.5.5 0 018 1z"/></svg> Generate';area.classList.remove('generating');return}
+    const resp=await fetch(API+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!resp.ok){const err=await resp.json();codeEl.textContent='Error: '+(err.detail||'Request failed');statusTag.textContent='Error';statusTag.className='status-tag status-error';resetBtn(origLabel);return}
     const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
     while(true){
       const{done,value}=await reader.read();if(done)break;
@@ -489,14 +606,36 @@ async function generateCode(){
     }
     if(!statusTag.classList.contains('status-error')){statusTag.textContent='Complete';statusTag.className='status-tag status-done'}
   }catch(e){codeEl.textContent='Connection error: '+e.message;statusTag.textContent='Error';statusTag.className='status-tag status-error'}
-  btn.innerHTML='<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 1a.5.5 0 01.5.5v5h5a.5.5 0 010 1h-5v5a.5.5 0 01-1 0v-5h-5a.5.5 0 010-1h5v-5A.5.5 0 018 1z"/></svg> Generate';area.classList.remove('generating');
+  resetBtn(origLabel);
+}
+
+function resetBtn(label){
+  const btn=document.getElementById('gen-btn'),area=document.getElementById('prompt-area');
+  btn.querySelector('#gen-btn-label').textContent=label;area.classList.remove('generating');
 }
 
 function copyOutput(){const c=document.getElementById('code-content').textContent;if(c)navigator.clipboard.writeText(c)}
-function copyApiKey(){const v=document.getElementById('api-key-value').textContent;if(!v.includes('••'))navigator.clipboard.writeText(v)}
+function copyApiKey(){const v=document.getElementById('api-key-value').textContent;if(!v.includes('Shown'))navigator.clipboard.writeText(v)}
+
+function downloadOutput(){
+  const code=document.getElementById('code-content').textContent;
+  if(!code)return;
+  const lang=document.getElementById('gen-language').value;
+  const exts={python:'py',typescript:'ts',javascript:'js',go:'go',rust:'rs',java:'java',csharp:'cs',cpp:'cpp',kotlin:'kt',swift:'swift',php:'php',ruby:'rb',dart:'dart',scala:'scala',elixir:'ex',zig:'zig',lua:'lua'};
+  const ext=Object.entries(exts).find(([k])=>lang.includes(k))?.[1]||'txt';
+  const blob=new Blob([code],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='generated.'+ext;a.click();URL.revokeObjectURL(a.href);
+}
+
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
+    e.preventDefault();
+    if(document.getElementById('dashboard').style.display!=='none'&&document.getElementById('page-generate').classList.contains('active'))doGenerate();
+  }
+});
 
 if(accessToken)showDashboard();
 </script>
-<style>.spin{animation:spin 1s linear infinite}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
 </body>
 </html>
