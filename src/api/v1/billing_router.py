@@ -390,13 +390,13 @@ async def create_checkout(request: Request, payload: CheckoutRequest) -> JSONRes
         "agency": settings.paypro_product_id_agency,
     }
 
-    product_id = product_ids.get(payload.plan)
-    if not product_id:
+    if payload.plan not in product_ids:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": f"Invalid plan: {payload.plan}. Must be 'pro' or 'agency'."},
         )
 
+    product_id = product_ids[payload.plan]
     if not product_id.strip():
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
