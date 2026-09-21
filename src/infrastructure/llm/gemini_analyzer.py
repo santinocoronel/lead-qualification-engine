@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from enum import StrEnum
 
 import structlog
@@ -47,12 +48,20 @@ Budget estimate tiers:
 Be precise and data-driven. Base the score strictly on evidence in the inquiry text.\
 """
 
+_RETRYABLE_ERRORS = (
+    ConnectionError,
+    TimeoutError,
+    asyncio.TimeoutError,
+)
+
 
 class GeminiLeadAnalyzer(LLMAnalyzerPort):
     def __init__(self, settings: Settings) -> None:
         self._client = genai.Client(api_key=settings.gemini_api_key)
         self._model = settings.gemini_model
         self._timeout = settings.llm_timeout_seconds
+        self._max_retries = settings.llm_max_retries
+        self._retry_base_delay = settings.llm_retry_base_delay
 
     async def analyze_lead(
         self,
@@ -66,30 +75,75 @@ class GeminiLeadAnalyzer(LLMAnalyzerPort):
             f"Inquiry:\n{inquiry_text}"
         )
 
-        try:
-            response = await self._client.aio.models.generate_content(
-                model=self._model,
-                contents=user_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=_SYSTEM_PROMPT,
-                    response_mime_type="application/json",
-                    response_schema=_LeadAnalysisSchema,
-                    temperature=0.1,
-                ),
-            )
-        except Exception as exc:
-            logger.error("gemini_api_call_failed", error=str(exc))
-            raise LLMProviderError(detail=str(exc)) from exc
+        raw_text = await self._call_with_retry(user_prompt)
+        return self._parse_response(raw_text)
 
-        if not response.text:
-            raise LLMProviderError(detail="Empty response from Gemini")
+    async def _call_with_retry(self, prompt: str) -> str:
+        last_error: Exception | None = None
 
+        for attempt in range(1, self._max_retries + 1):
+            try:
+                response = await asyncio.wait_for(
+                    self._client.aio.models.generate_content(
+                        model=self._model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=_SYSTEM_PROMPT,
+                            response_mime_type="application/json",
+                            response_schema=_LeadAnalysisSchema,
+                            temperature=0.1,
+                        ),
+                    ),
+                    timeout=self._timeout,
+                )
+
+                if not response.text:
+                    raise LLMProviderError(detail="Empty response from Gemini")
+
+                logger.info(
+                    "gemini_call_succeeded",
+                    attempt=attempt,
+                    model=self._model,
+                )
+                return response.text
+
+            except _RETRYABLE_ERRORS as exc:
+                last_error = exc
+                delay = self._retry_base_delay * (2 ** (attempt - 1))
+                logger.warning(
+                    "gemini_transient_failure",
+                    attempt=attempt,
+                    max_retries=self._max_retries,
+                    retry_delay_seconds=delay,
+                    error=str(exc),
+                    error_type=type(exc).__name__,
+                )
+                if attempt < self._max_retries:
+                    await asyncio.sleep(delay)
+
+            except LLMProviderError:
+                raise
+
+            except Exception as exc:
+                logger.error(
+                    "gemini_non_retryable_failure",
+                    attempt=attempt,
+                    error=str(exc),
+                    error_type=type(exc).__name__,
+                )
+                raise LLMProviderError(detail=str(exc)) from exc
+
+        raise LLMProviderError(
+            detail=f"All {self._max_retries} retry attempts exhausted. Last error: {last_error}"
+        ) from last_error
+
+    def _parse_response(self, raw_text: str) -> LLMAnalysisResult:
         try:
-            parsed = _LeadAnalysisSchema.model_validate_json(response.text)
+            parsed = _LeadAnalysisSchema.model_validate_json(raw_text)
         except Exception as exc:
             logger.error(
                 "gemini_response_validation_failed",
-                raw_response=response.text,
+                raw_response=raw_text[:500],
                 error=str(exc),
             )
             raise LLMResponseValidationError(detail=str(exc)) from exc

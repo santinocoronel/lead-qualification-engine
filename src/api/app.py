@@ -9,8 +9,8 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.middleware.error_handler import register_error_handlers
-from src.api.v1.leads_router import router as leads_router
 from src.api.v1.health_router import router as health_router
+from src.api.v1.leads_router import router as leads_router
 from src.infrastructure.config.settings import Settings
 from src.infrastructure.persistence.database import async_session_factory, create_engine
 
@@ -28,6 +28,37 @@ structlog.configure(
     logger_factory=structlog.PrintLoggerFactory(),
     cache_logger_on_first_use=True,
 )
+
+_OPENAPI_DESCRIPTION = """\
+## Overview
+
+AI-powered **B2B lead qualification engine** that processes inbound prospect inquiries,
+scores them across four dimensions (budget, urgency, technical fit, intent clarity)
+using Google Gemini with structured JSON output, and persists the result transactionally
+in PostgreSQL.
+
+## Architecture
+
+Built on **Clean Architecture / Hexagonal** principles:
+
+| Layer | Responsibility |
+|-------|---------------|
+| **Domain** | Entities, Value Objects, Ports (interfaces), typed errors |
+| **Application** | Use Case orchestration — zero infrastructure imports |
+| **Infrastructure** | SQLAlchemy 2.0 async adapter, Gemini LLM client with retry |
+| **API** | FastAPI controllers, Pydantic v2 DTOs, error mapping |
+
+## Resilience
+
+- **Retry with exponential backoff** on transient LLM failures (configurable attempts + base delay)
+- **Structured JSON logging** with per-request `X-Request-ID` tracing
+- **Typed domain errors** mapped to semantic HTTP status codes (400 / 422 / 502 / 500)
+
+## Authentication
+
+Not included in this version. Integrate your preferred auth layer (OAuth2, API keys, JWT)
+via FastAPI dependency injection.
+"""
 
 
 @asynccontextmanager
@@ -49,11 +80,23 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
-        description="AI-powered B2B lead qualification engine with structured scoring.",
+        description=_OPENAPI_DESCRIPTION,
         lifespan=lifespan,
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        openapi_tags=[
+            {
+                "name": "Lead qualification",
+                "description": "Ingest, score and persist B2B leads via AI analysis.",
+            },
+            {
+                "name": "health",
+                "description": "Liveness and readiness probes for orchestrators and load balancers.",
+            },
+        ],
+        contact={"name": "Lead Engine API Support"},
+        license_info={"name": "MIT", "identifier": "MIT"},
     )
 
     app.state.settings = settings
