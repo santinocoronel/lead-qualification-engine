@@ -247,3 +247,106 @@ async def _reactivate(session_factory: object, user_email: str) -> None:
                 logger.info("subscription_reactivated", user_email=user_email)
             else:
                 logger.warning("client_not_found_for_reactivation", user_email=user_email)
+
+
+_PAYPRO_PRODUCT_TO_PLAN: dict[str, _PlanConfig] = {
+    "Pro": _PlanConfig(tier=PlanTier.PRO, monthly_limit=5000),
+    "Agency": _PlanConfig(tier=PlanTier.AGENCY, monthly_limit=25000),
+}
+
+
+@router.post(
+    "/paypro-webhook",
+    status_code=status.HTTP_200_OK,
+    summary="PayPro Global IPN webhook receiver",
+    description=(
+        "Receives PayPro Global IPN (Instant Payment Notification) events. "
+        "Handles: CHARGE.COMPLETED, SUBSCRIPTION.ACTIVATED, SUBSCRIPTION.CANCELLED, "
+        "SUBSCRIPTION.EXPIRED, CHARGE.REFUNDED, CHARGE.FAILED."
+    ),
+    responses={
+        200: {"description": "Webhook processed successfully."},
+        400: {"description": "Invalid payload or signature."},
+    },
+)
+async def paypro_webhook(request: Request) -> JSONResponse:
+    settings = request.app.state.settings
+    body = await request.body()
+
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "Invalid JSON payload."},
+        )
+
+    event_type = payload.get("event_type", payload.get("EventType", ""))
+    order_data = payload.get("data", payload.get("IPN", {}))
+
+    customer_email = (
+        order_data.get("customer_email")
+        or order_data.get("CustomerEmail")
+        or order_data.get("BuyerEmail", "")
+    )
+    product_name = (
+        order_data.get("product_name")
+        or order_data.get("ProductName")
+        or order_data.get("title", "")
+    )
+    order_id = str(
+        order_data.get("order_id")
+        or order_data.get("OrderId")
+        or order_data.get("id", "")
+    )
+
+    logger.info(
+        "paypro_webhook_received",
+        event_type=event_type,
+        customer_email=customer_email,
+        product_name=product_name,
+        order_id=order_id,
+    )
+
+    event_upper = event_type.upper().replace(".", "_").replace(" ", "_")
+
+    if event_upper in (
+        "CHARGE_COMPLETED", "SUBSCRIPTION_ACTIVATED", "ORDER_COMPLETED",
+        "PAYMENT_COMPLETED", "SUBSCRIPTION_CREATED",
+    ):
+        plan_cfg = _DEFAULT_PLAN
+        for key, cfg in _PAYPRO_PRODUCT_TO_PLAN.items():
+            if key.lower() in product_name.lower():
+                plan_cfg = cfg
+                break
+        await _activate_subscription(
+            request.app.state.session_factory, customer_email, order_id, plan_cfg
+        )
+
+    elif event_upper in ("SUBSCRIPTION_CANCELLED", "SUBSCRIPTION_CANCELED"):
+        await _set_status(
+            request.app.state.session_factory, customer_email, SubscriptionStatus.CANCELED
+        )
+
+    elif event_upper in ("SUBSCRIPTION_EXPIRED", "SUBSCRIPTION_ENDED"):
+        await _set_status(
+            request.app.state.session_factory, customer_email, SubscriptionStatus.INACTIVE
+        )
+
+    elif event_upper in ("CHARGE_REFUNDED", "ORDER_REFUNDED"):
+        await _set_status(
+            request.app.state.session_factory, customer_email, SubscriptionStatus.INACTIVE
+        )
+
+    elif event_upper in ("CHARGE_FAILED", "PAYMENT_FAILED"):
+        await _set_status(
+            request.app.state.session_factory, customer_email, SubscriptionStatus.PAST_DUE
+        )
+
+    elif event_upper in ("SUBSCRIPTION_RESUMED", "SUBSCRIPTION_REACTIVATED"):
+        await _reactivate(request.app.state.session_factory, customer_email)
+
+    else:
+        logger.debug("paypro_unhandled_event", event_type=event_type)
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})

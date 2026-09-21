@@ -30,6 +30,8 @@ class Settings(BaseSettings):
 
     lemonsqueezy_webhook_secret: str = Field(default="")
 
+    paypro_secret_key: str = Field(default="", description="PayPro Global IPN secret key")
+
     jwt_secret_key: str = Field(default="change-me-in-production")
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_expire_minutes: int = Field(default=15)
