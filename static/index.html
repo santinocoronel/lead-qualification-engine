@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadEngine — AI-Powered Lead Qualification</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--surface:#18181b;--border:#27272a;
+  --text:#fafafa;--muted:#a1a1aa;--primary:#6366f1;--primary-hover:#818cf8;
+  --green:#22c55e;--amber:#f59e0b;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--primary);text-decoration:none}
+a:hover{color:var(--primary-hover)}
+
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* NAV */
+nav{border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(12px);z-index:100}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+nav .logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+nav .logo span{color:var(--primary)}
+nav .links{display:flex;gap:32px;align-items:center}
+nav .links a{color:var(--muted);font-size:14px;font-weight:500;transition:color .2s}
+nav .links a:hover{color:var(--text)}
+.btn{display:inline-block;padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;transition:all .2s;cursor:pointer;border:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);color:#fff;transform:translateY(-1px)}
+.btn-outline{border:1px solid var(--border);color:var(--text);background:transparent}
+.btn-outline:hover{border-color:var(--muted);background:var(--surface)}
+
+/* HERO */
+.hero{padding:100px 0 80px;text-align:center}
+.hero .badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;color:var(--primary);background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);margin-bottom:24px}
+.hero h1{font-size:clamp(36px,5vw,64px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--muted);max-width:600px;margin:0 auto 40px}
+.hero .ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+/* FEATURES */
+.features{padding:80px 0}
+.section-title{text-align:center;margin-bottom:60px}
+.section-title h2{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.section-title p{color:var(--muted);font-size:16px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px}
+.feature-card .icon{width:48px;height:48px;border-radius:12px;background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:24px}
+.feature-card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.feature-card p{color:var(--muted);font-size:14px}
+
+/* HOW IT WORKS */
+.how-it-works{padding:80px 0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;margin-top:48px}
+.step{text-align:center;padding:24px}
+.step .num{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;margin-bottom:16px}
+.step h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.step p{color:var(--muted);font-size:14px}
+
+/* CODE EXAMPLE */
+.code-section{padding:60px 0}
+.code-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;overflow-x:auto;max-width:720px;margin:0 auto}
+.code-block pre{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:#e4e4e7}
+.code-block .comment{color:#6b7280}
+.code-block .string{color:#a78bfa}
+.code-block .key{color:#60a5fa}
+
+/* PRICING */
+.pricing{padding:80px 0}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1000px;margin:0 auto}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 32px;position:relative;transition:transform .2s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.popular{border-color:var(--primary);box-shadow:0 0 40px rgba(99,102,241,.15)}
+.price-card.popular::before{content:"Most Popular";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:12px;font-weight:700;padding:4px 16px;border-radius:20px}
+.price-card .plan-name{font-size:16px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.price-card .price{font-size:48px;font-weight:800;letter-spacing:-2px;margin-bottom:4px}
+.price-card .price span{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0}
+.price-card .price-desc{color:var(--muted);font-size:14px;margin-bottom:24px}
+.price-card ul{list-style:none;margin-bottom:32px}
+.price-card li{padding:8px 0;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.price-card li::before{content:"\2713";color:var(--green);font-weight:700}
+.price-card .btn{width:100%;text-align:center;display:block;padding:14px}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:40px 0;text-align:center}
+footer p{color:var(--muted);font-size:14px}
+
+@media(max-width:768px){
+  nav .links{display:none}
+  .hero{padding:60px 0 40px}
+  .pricing-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+  <div class="logo">Lead<span>Engine</span></div>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/docs">API Docs</a>
+    <a href="/dashboard.html" class="btn btn-primary">Dashboard</a>
+  </div>
+</div>
+</nav>
+
+<section class="hero">
+<div class="container">
+  <div class="badge">AI-Powered B2B Lead Scoring</div>
+  <h1>Qualify leads in <span>seconds</span>,<br>not hours</h1>
+  <p>Our AI engine scores inbound prospects across budget, urgency, technical fit, and intent clarity — so your sales team only talks to buyers ready to close.</p>
+  <div class="ctas">
+    <a href="/dashboard.html" class="btn btn-primary">Get Started Free</a>
+    <a href="/docs" class="btn btn-outline">View API Docs</a>
+  </div>
+</div>
+</section>
+
+<section class="features" id="features">
+<div class="container">
+  <div class="section-title">
+    <h2>Built for Scale</h2>
+    <p>Everything you need to automate lead qualification in your pipeline</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon">&#x1F9E0;</div>
+      <h3>AI-Powered Scoring</h3>
+      <p>Google Gemini analyzes leads across 4 dimensions with structured JSON output. Get instant qualification scores from 0-100.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x26A1;</div>
+      <h3>Sub-Second API</h3>
+      <p>REST API built on FastAPI with async PostgreSQL. Handles thousands of concurrent requests with built-in rate limiting.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F510;</div>
+      <h3>Enterprise Auth</h3>
+      <p>SHA-256 hashed API keys, JWT authentication, per-tenant quotas, and subscription-based access control.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F504;</div>
+      <h3>Resilient by Design</h3>
+      <p>Exponential backoff retries, structured logging, and circuit-breaker patterns keep your pipeline running 24/7.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F511;</div>
+      <h3>Bring Your Own Key</h3>
+      <p>Use your own OpenAI, Anthropic, or Gemini API key. Skip quotas and control your AI costs directly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#x1F4CA;</div>
+      <h3>Usage Analytics</h3>
+      <p>Real-time usage tracking with 80% and 95% threshold alerts. Never hit your limit without warning.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="how-it-works" id="how-it-works">
+<div class="container">
+  <div class="section-title">
+    <h2>How It Works</h2>
+    <p>Three API calls from zero to qualified leads</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>Register</h3>
+      <p>Create an account and get your API key instantly. Free tier includes 100 requests/month.</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>Send a Lead</h3>
+      <p>POST your prospect's inquiry to our endpoint — company, message, source, and metadata.</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>Get the Score</h3>
+      <p>Receive a structured qualification with scores, reasoning, and a recommended action in milliseconds.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="code-section">
+<div class="container">
+  <div class="section-title">
+    <h2>Simple Integration</h2>
+    <p>One API call is all it takes</p>
+  </div>
+  <div class="code-block">
+<pre><span class="comment"># Qualify a lead with a single API call</span>
+curl -X POST https://lead-qualification-engine-4ltk.onrender.com/api/v1/leads/analyze \
+  -H <span class="string">"X-API-Key: your_api_key"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="key">"company_name"</span>: <span class="string">"Acme Corp"</span>,
+    <span class="key">"contact_name"</span>: <span class="string">"Jane Smith"</span>,
+    <span class="key">"contact_email"</span>: <span class="string">"jane@acme.com"</span>,
+    <span class="key">"message"</span>: <span class="string">"We need an enterprise solution for 500 users, budget approved for Q4"</span>,
+    <span class="key">"source"</span>: <span class="string">"website_form"</span>
+  }'</pre>
+  </div>
+</div>
+</section>
+
+<section class="pricing" id="pricing">
+<div class="container">
+  <div class="section-title">
+    <h2>Simple Pricing</h2>
+    <p>Start free, scale as you grow. No hidden fees.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="plan-name">Free</div>
+      <div class="price">$0<span>/mo</span></div>
+      <div class="price-desc">Perfect for testing and small projects</div>
+      <ul>
+        <li>100 lead qualifications / month</li>
+        <li>AI scoring (4 dimensions)</li>
+        <li>REST API access</li>
+        <li>Structured JSON responses</li>
+        <li>Community support</li>
+      </ul>
+      <a href="/dashboard.html" class="btn btn-outline">Get Started</a>
+    </div>
+    <div class="price-card popular">
+      <div class="plan-name">Pro</div>
+      <div class="price">$49<span>/mo</span></div>
+      <div class="price-desc">For growing sales teams</div>
+      <ul>
+        <li>5,000 lead qualifications / month</li>
+        <li>Everything in Free</li>
+        <li>BYOK (use your own AI key)</li>
+        <li>Usage alerts (80% / 95%)</li>
+        <li>Priority email support</li>
+      </ul>
+      <a href="/dashboard.html" class="btn btn-primary">Start Pro Trial</a>
+    </div>
+    <div class="price-card">
+      <div class="plan-name">Agency</div>
+      <div class="price">$199<span>/mo</span></div>
+      <div class="price-desc">For agencies and high-volume teams</div>
+      <ul>
+        <li>25,000 lead qualifications / month</li>
+        <li>Everything in Pro</li>
+        <li>Multi-model support (OpenAI, Anthropic, Gemini)</li>
+        <li>Webhook integrations</li>
+        <li>Dedicated support + SLA</li>
+      </ul>
+      <a href="/dashboard.html" class="btn btn-outline">Contact Sales</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+<div class="container">
+  <p>LeadEngine &copy; 2026. Built with FastAPI, PostgreSQL & Google Gemini.</p>
+</div>
+</footer>
+
+</body>
+</html>

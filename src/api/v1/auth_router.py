@@ -13,7 +13,8 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select, update
 
 from src.api.middleware.api_key_auth import hash_api_key
-from src.domain.value_objects.enums import PlanTier, SubscriptionStatus
+from src.domain.value_objects.enums import LLMProvider, PlanTier, SubscriptionStatus
+from src.infrastructure.crypto.fernet_utils import encrypt_value
 from src.infrastructure.persistence.client_model import ClientModel
 
 logger = structlog.get_logger(__name__)
@@ -63,6 +64,21 @@ class ResetPasswordRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class ProfileResponse(BaseModel):
+    client_id: str
+    email: str
+    plan_tier: str
+    subscription_status: str
+    monthly_requests_used: int
+    monthly_requests_limit: int
+    custom_llm_provider: str | None = None
+
+
+class BYOKRequest(BaseModel):
+    provider: str
+    api_key: str = Field(min_length=1)
 
 
 def _create_access_token(data: dict[str, object], secret: str, algorithm: str, expire_minutes: int) -> str:
@@ -247,3 +263,105 @@ async def reset_password(request: Request, payload: ResetPasswordRequest) -> Mes
     logger.info("password_reset_completed", email=client.owner_email)
 
     return MessageResponse(message="Password reset successful.")
+
+
+async def _get_current_client(request: Request) -> ClientModel | None:
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header[7:]
+    settings = request.app.state.settings
+    try:
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        if payload.get("type") != "access":
+            return None
+        email = payload.get("sub")
+    except jwt.PyJWTError:
+        return None
+
+    session_factory = request.app.state.session_factory
+    async with session_factory() as session:
+        result = await session.execute(
+            select(ClientModel).where(ClientModel.owner_email == email)
+        )
+        return result.scalar_one_or_none()
+
+
+@router.get(
+    "/me",
+    response_model=ProfileResponse,
+    summary="Get current user profile and usage",
+)
+async def get_me(request: Request) -> ProfileResponse | JSONResponse:
+    client = await _get_current_client(request)
+    if not client:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Invalid or expired token."})
+
+    return ProfileResponse(
+        client_id=str(client.id),
+        email=client.owner_email,
+        plan_tier=client.plan_tier,
+        subscription_status=client.subscription_status,
+        monthly_requests_used=client.monthly_requests_used,
+        monthly_requests_limit=client.monthly_requests_limit,
+        custom_llm_provider=client.custom_llm_provider,
+    )
+
+
+@router.put(
+    "/me/byok",
+    response_model=MessageResponse,
+    summary="Set BYOK (Bring Your Own Key) provider and API key",
+)
+async def set_byok(request: Request, payload: BYOKRequest) -> MessageResponse | JSONResponse:
+    client = await _get_current_client(request)
+    if not client:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Invalid or expired token."})
+
+    valid_providers = {p.value for p in LLMProvider}
+    if payload.provider not in valid_providers:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": f"Invalid provider. Must be one of: {', '.join(valid_providers)}"},
+        )
+
+    settings = request.app.state.settings
+    if not settings.fernet_key:
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": "Encryption not configured."})
+
+    encrypted = encrypt_value(payload.api_key, settings.fernet_key)
+
+    session_factory = request.app.state.session_factory
+    async with session_factory() as session:
+        async with session.begin():
+            await session.execute(
+                update(ClientModel)
+                .where(ClientModel.id == client.id)
+                .values(custom_llm_provider=payload.provider, encrypted_api_key=encrypted)
+            )
+
+    logger.info("byok_configured", email=client.owner_email, provider=payload.provider)
+    return MessageResponse(message="BYOK key saved successfully.")
+
+
+@router.delete(
+    "/me/byok",
+    response_model=MessageResponse,
+    summary="Remove BYOK configuration",
+)
+async def remove_byok(request: Request) -> MessageResponse | JSONResponse:
+    client = await _get_current_client(request)
+    if not client:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Invalid or expired token."})
+
+    session_factory = request.app.state.session_factory
+    async with session_factory() as session:
+        async with session.begin():
+            await session.execute(
+                update(ClientModel)
+                .where(ClientModel.id == client.id)
+                .values(custom_llm_provider=None, encrypted_api_key=None)
+            )
+
+    logger.info("byok_removed", email=client.owner_email)
+    return MessageResponse(message="BYOK key removed.")

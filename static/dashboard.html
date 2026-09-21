@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — LeadEngine</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--surface:#18181b;--border:#27272a;--surface-hover:#1f1f23;
+  --text:#fafafa;--muted:#a1a1aa;--primary:#6366f1;--primary-hover:#818cf8;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* AUTH SCREENS */
+.auth-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px}
+.auth-box .logo{font-size:24px;font-weight:800;text-align:center;margin-bottom:8px}
+.auth-box .logo span{color:var(--primary)}
+.auth-box .subtitle{text-align:center;color:var(--muted);font-size:14px;margin-bottom:32px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--muted)}
+.form-group input,.form-group select{width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--primary)}
+.btn{display:block;width:100%;padding:12px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all .2s;text-align:center;font-family:inherit}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-outline{border:1px solid var(--border);color:var(--text);background:transparent;margin-top:12px}
+.btn-outline:hover{border-color:var(--muted)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--muted)}
+.auth-switch a{color:var(--primary);cursor:pointer;text-decoration:none}
+.error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+.success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+
+/* DASHBOARD LAYOUT */
+.dashboard{display:none}
+.top-bar{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.top-bar .logo{font-size:20px;font-weight:800}
+.top-bar .logo span{color:var(--primary)}
+.top-bar .user-info{display:flex;align-items:center;gap:16px}
+.top-bar .user-email{font-size:13px;color:var(--muted)}
+.top-bar .logout{font-size:13px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600}
+.dash-content{max-width:900px;margin:0 auto;padding:32px 24px}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
+.card h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.stat-card .label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:800;letter-spacing:-1px}
+.stat-card .sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* API KEY */
+.api-key-display{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
+.api-key-display code{flex:1;font-size:14px;font-family:'JetBrains Mono',monospace;word-break:break-all}
+.api-key-display button{background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* USAGE BAR */
+.usage-bar-container{margin:16px 0}
+.usage-bar{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.usage-bar .fill{height:100%;border-radius:6px;transition:width .5s ease}
+.usage-bar .fill.green{background:var(--green)}
+.usage-bar .fill.amber{background:var(--amber)}
+.usage-bar .fill.red{background:var(--red)}
+.usage-text{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
+
+/* BYOK */
+.byok-form{display:grid;gap:16px}
+.byok-row{display:grid;grid-template-columns:1fr 2fr;gap:12px;align-items:end}
+.byok-row .form-group{margin-bottom:0}
+.byok-actions{display:flex;gap:12px;margin-top:8px}
+.byok-actions .btn{width:auto;padding:10px 24px}
+.badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-purple{background:rgba(99,102,241,.15);color:var(--primary)}
+
+/* LEAD TEST */
+.lead-test textarea{width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;resize:vertical;min-height:100px;outline:none}
+.lead-test textarea:focus{border-color:var(--primary)}
+.lead-result{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px;display:none}
+.lead-result pre{font-family:'JetBrains Mono',monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+
+@media(max-width:640px){
+  .byok-row{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH: LOGIN -->
+<div id="auth-login" class="auth-container">
+<div class="auth-box">
+  <div class="logo">Lead<span>Engine</span></div>
+  <div class="subtitle">Sign in to your dashboard</div>
+  <div id="login-error" class="error-msg"></div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="login-email" placeholder="you@company.com">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="login-password" placeholder="Min. 8 characters">
+  </div>
+  <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+  <div class="auth-switch">
+    Don't have an account? <a onclick="showRegister()">Create one</a>
+  </div>
+</div>
+</div>
+
+<!-- AUTH: REGISTER -->
+<div id="auth-register" class="auth-container" style="display:none">
+<div class="auth-box">
+  <div class="logo">Lead<span>Engine</span></div>
+  <div class="subtitle">Create your account — it's free</div>
+  <div id="register-error" class="error-msg"></div>
+  <div id="register-success" class="success-msg"></div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="reg-email" placeholder="you@company.com">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="reg-password" placeholder="Min. 8 characters">
+  </div>
+  <button class="btn btn-primary" onclick="doRegister()">Create Account</button>
+  <div class="auth-switch">
+    Already have an account? <a onclick="showLogin()">Sign in</a>
+  </div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+<div class="top-bar">
+  <div class="logo">Lead<span>Engine</span></div>
+  <div class="user-info">
+    <span class="user-email" id="dash-email"></span>
+    <button class="logout" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dash-content">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Plan</div>
+      <div class="value" id="stat-plan">—</div>
+      <div class="sub" id="stat-status"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Requests Used</div>
+      <div class="value" id="stat-used">—</div>
+      <div class="sub" id="stat-limit"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Remaining</div>
+      <div class="value" id="stat-remaining">—</div>
+      <div class="sub">this billing cycle</div>
+    </div>
+  </div>
+
+  <!-- USAGE BAR -->
+  <div class="card">
+    <h2>Usage</h2>
+    <div class="usage-bar-container">
+      <div class="usage-bar"><div class="fill green" id="usage-fill" style="width:0%"></div></div>
+      <div class="usage-text">
+        <span id="usage-pct">0%</span>
+        <span id="usage-counts">0 / 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="card">
+    <h2>API Key</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Use this key in the <code>X-API-Key</code> header for all API requests.</p>
+    <div class="api-key-display">
+      <code id="api-key-value">••••••••••••••••••••••••••••••••</code>
+      <button onclick="copyApiKey()">Copy</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Your API key was shown once at registration. If you lost it, contact support.</p>
+  </div>
+
+  <!-- BYOK -->
+  <div class="card">
+    <h2>Bring Your Own Key (BYOK)</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Connect your own AI provider API key to bypass quotas and control costs.</p>
+    <div id="byok-current" style="display:none;margin-bottom:16px">
+      <span class="badge badge-purple" id="byok-badge"></span>
+      <button class="btn btn-danger" style="width:auto;padding:8px 16px;font-size:12px;margin-top:12px" onclick="removeBYOK()">Remove BYOK Key</button>
+    </div>
+    <div class="byok-form" id="byok-form">
+      <div class="byok-row">
+        <div class="form-group">
+          <label>AI Provider</label>
+          <select id="byok-provider">
+            <option value="">Select provider...</option>
+            <option value="OPENAI">OpenAI (GPT-4)</option>
+            <option value="ANTHROPIC">Anthropic (Claude)</option>
+            <option value="GEMINI">Google Gemini</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input type="password" id="byok-key" placeholder="sk-... or your provider key">
+        </div>
+      </div>
+      <div class="byok-actions">
+        <button class="btn btn-primary" onclick="saveBYOK()">Save BYOK Key</button>
+      </div>
+    </div>
+    <div id="byok-error" class="error-msg" style="margin-top:12px"></div>
+    <div id="byok-success" class="success-msg" style="margin-top:12px"></div>
+  </div>
+
+  <!-- TEST LEAD -->
+  <div class="card lead-test">
+    <h2>Test Lead Qualification</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Send a test lead to see the AI scoring in action.</p>
+    <div class="form-group">
+      <label>Company Name</label>
+      <input type="text" id="test-company" placeholder="Acme Corp">
+    </div>
+    <div class="form-group">
+      <label>Contact Name</label>
+      <input type="text" id="test-contact" placeholder="Jane Smith">
+    </div>
+    <div class="form-group">
+      <label>Contact Email</label>
+      <input type="email" id="test-email" placeholder="jane@acme.com">
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <textarea id="test-message" placeholder="We need an enterprise solution for 500 users, budget approved for Q4..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="testLead()" id="test-btn">Analyze Lead</button>
+    <div class="lead-result" id="lead-result">
+      <pre id="lead-result-json"></pre>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const API = window.location.origin;
+let accessToken = localStorage.getItem('access_token');
+let apiKeyRaw = localStorage.getItem('api_key_raw');
+
+function showLogin(){
+  document.getElementById('auth-login').style.display='flex';
+  document.getElementById('auth-register').style.display='none';
+}
+function showRegister(){
+  document.getElementById('auth-login').style.display='none';
+  document.getElementById('auth-register').style.display='flex';
+}
+
+async function doRegister(){
+  const email=document.getElementById('reg-email').value;
+  const password=document.getElementById('reg-password').value;
+  const errEl=document.getElementById('register-error');
+  const sucEl=document.getElementById('register-success');
+  errEl.style.display='none';sucEl.style.display='none';
+
+  try{
+    const r=await fetch(API+'/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await r.json();
+    if(!r.ok){errEl.textContent=data.detail||'Registration failed';errEl.style.display='block';return}
+    localStorage.setItem('api_key_raw',data.api_key);
+    apiKeyRaw=data.api_key;
+    sucEl.innerHTML='Account created! Your API Key: <strong>'+data.api_key+'</strong><br>Save this key — it won\'t be shown again.';
+    sucEl.style.display='block';
+    setTimeout(()=>{
+      const r2=doLoginDirect(email,password);
+    },2000);
+  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
+}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value;
+  const password=document.getElementById('login-password').value;
+  await doLoginDirect(email,password);
+}
+
+async function doLoginDirect(email,password){
+  const errEl=document.getElementById('login-error');
+  errEl.style.display='none';
+  try{
+    const r=await fetch(API+'/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await r.json();
+    if(!r.ok){errEl.textContent=data.detail||'Login failed';errEl.style.display='block';return}
+    localStorage.setItem('access_token',data.access_token);
+    localStorage.setItem('user_email',email);
+    accessToken=data.access_token;
+    showDashboard();
+  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
+}
+
+function doLogout(){
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user_email');
+  accessToken=null;
+  document.getElementById('dashboard').style.display='none';
+  showLogin();
+}
+
+async function showDashboard(){
+  document.getElementById('auth-login').style.display='none';
+  document.getElementById('auth-register').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('dash-email').textContent=localStorage.getItem('user_email')||'';
+  if(apiKeyRaw){document.getElementById('api-key-value').textContent=apiKeyRaw}
+  await loadProfile();
+}
+
+async function loadProfile(){
+  try{
+    const r=await fetch(API+'/api/v1/auth/me',{headers:{'Authorization':'Bearer '+accessToken}});
+    if(r.status===401){doLogout();return}
+    const d=await r.json();
+
+    document.getElementById('stat-plan').textContent=d.plan_tier;
+    const statusBadge=d.subscription_status==='ACTIVE'?'badge-green':d.subscription_status==='PAST_DUE'?'badge-amber':'badge-red';
+    document.getElementById('stat-status').innerHTML='<span class="badge '+statusBadge+'">'+d.subscription_status+'</span>';
+    document.getElementById('stat-used').textContent=d.monthly_requests_used.toLocaleString();
+    document.getElementById('stat-limit').textContent='of '+d.monthly_requests_limit.toLocaleString();
+    const remaining=Math.max(0,d.monthly_requests_limit-d.monthly_requests_used);
+    document.getElementById('stat-remaining').textContent=remaining.toLocaleString();
+
+    const pct=d.monthly_requests_limit>0?Math.round((d.monthly_requests_used/d.monthly_requests_limit)*100):0;
+    const fill=document.getElementById('usage-fill');
+    fill.style.width=Math.min(pct,100)+'%';
+    fill.className='fill '+(pct>=95?'red':pct>=80?'amber':'green');
+    document.getElementById('usage-pct').textContent=pct+'%';
+    document.getElementById('usage-counts').textContent=d.monthly_requests_used.toLocaleString()+' / '+d.monthly_requests_limit.toLocaleString();
+
+    if(d.custom_llm_provider){
+      document.getElementById('byok-current').style.display='block';
+      document.getElementById('byok-badge').textContent='BYOK: '+d.custom_llm_provider;
+      document.getElementById('byok-form').style.display='none';
+    }else{
+      document.getElementById('byok-current').style.display='none';
+      document.getElementById('byok-form').style.display='grid';
+    }
+  }catch(e){console.error(e)}
+}
+
+function copyApiKey(){
+  const v=document.getElementById('api-key-value').textContent;
+  if(v.includes('••'))return;
+  navigator.clipboard.writeText(v);
+  const btn=document.querySelector('.api-key-display button');
+  btn.textContent='Copied!';
+  setTimeout(()=>btn.textContent='Copy',2000);
+}
+
+async function saveBYOK(){
+  const provider=document.getElementById('byok-provider').value;
+  const key=document.getElementById('byok-key').value;
+  const errEl=document.getElementById('byok-error');
+  const sucEl=document.getElementById('byok-success');
+  errEl.style.display='none';sucEl.style.display='none';
+  if(!provider||!key){errEl.textContent='Select a provider and enter your API key.';errEl.style.display='block';return}
+  try{
+    const r=await fetch(API+'/api/v1/auth/me/byok',{method:'PUT',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({provider,api_key:key})});
+    const d=await r.json();
+    if(!r.ok){errEl.textContent=d.detail||'Failed to save';errEl.style.display='block';return}
+    sucEl.textContent='BYOK key saved! Quota limits are now bypassed.';sucEl.style.display='block';
+    await loadProfile();
+  }catch(e){errEl.textContent='Network error';errEl.style.display='block'}
+}
+
+async function removeBYOK(){
+  try{
+    const r=await fetch(API+'/api/v1/auth/me/byok',{method:'DELETE',headers:{'Authorization':'Bearer '+accessToken}});
+    if(r.ok)await loadProfile();
+  }catch(e){console.error(e)}
+}
+
+async function testLead(){
+  const key=apiKeyRaw||prompt('Enter your API key:');
+  if(!key)return;
+  const btn=document.getElementById('test-btn');
+  btn.textContent='Analyzing...';btn.disabled=true;
+  const resultEl=document.getElementById('lead-result');
+  const jsonEl=document.getElementById('lead-result-json');
+  resultEl.style.display='none';
+
+  try{
+    const r=await fetch(API+'/api/v1/leads/analyze',{
+      method:'POST',
+      headers:{'X-API-Key':key,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        company_name:document.getElementById('test-company').value||'Test Corp',
+        contact_name:document.getElementById('test-contact').value||'Test User',
+        contact_email:document.getElementById('test-email').value||'test@test.com',
+        message:document.getElementById('test-message').value||'We need a solution',
+        source:'dashboard_test'
+      })
+    });
+    const d=await r.json();
+    jsonEl.textContent=JSON.stringify(d,null,2);
+    resultEl.style.display='block';
+    await loadProfile();
+  }catch(e){jsonEl.textContent='Error: '+e.message;resultEl.style.display='block'}
+  btn.textContent='Analyze Lead';btn.disabled=false;
+}
+
+// Auto-login if token exists
+if(accessToken){showDashboard()}
+</script>
+</body>
+</html>
