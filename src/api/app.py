@@ -3,15 +3,14 @@ from __future__ import annotations
 import logging
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 import structlog
-from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-
 from slowapi.errors import RateLimitExceeded
 
 from src.api.middleware.error_handler import register_error_handlers
@@ -21,8 +20,9 @@ from src.api.v1.billing_router import router as billing_router
 from src.api.v1.generate_router import router as generate_router
 from src.api.v1.health_router import router as health_router
 from src.api.v1.leads_router import router as leads_router
-from src.infrastructure.email.smtp_adapter import ConsoleEmailAdapter, SMTPEmailAdapter
 from src.infrastructure.config.settings import Settings
+from src.infrastructure.email.resend_adapter import ResendEmailAdapter
+from src.infrastructure.email.smtp_adapter import ConsoleEmailAdapter, SMTPEmailAdapter
 from src.infrastructure.persistence.database import async_session_factory, create_engine
 
 
@@ -50,63 +50,45 @@ def _configure_logging(settings: Settings) -> None:
         cache_logger_on_first_use=True,
     )
 
+
 _OPENAPI_DESCRIPTION = """\
-## Overview
+## AI Context Engine
 
-AI-powered **B2B lead qualification engine** that processes inbound prospect inquiries,
-scores them across four dimensions (budget, urgency, technical fit, intent clarity)
-using Google Gemini with structured JSON output, and persists the result transactionally
-in PostgreSQL.
+Intelligent middleware between developers and LLMs. Configure your tech stack,
+define architecture rules, and generate production-ready code — streamed in
+real time via SSE.
 
-## Architecture
+### Core Capabilities
 
-Built on **Clean Architecture / Hexagonal** principles:
+| Feature | Detail |
+|---------|--------|
+| **Code Generation** | 20 languages, 50+ frameworks, 5 AI providers |
+| **Code Review** | Severity scoring against 20 architecture rules |
+| **Task Templates** | 12 battle-tested prompts for common patterns |
+| **BYOK** | Bring your own API key — never stored, per-request only |
+| **SSE Streaming** | Token-by-token output as it's generated |
 
-| Layer | Responsibility |
-|-------|---------------|
-| **Domain** | Entities, Value Objects, Ports (interfaces), typed errors |
-| **Application** | Use Case orchestration — zero infrastructure imports |
-| **Infrastructure** | SQLAlchemy 2.0 async adapter, Gemini LLM client with retry |
-| **API** | FastAPI controllers, Pydantic v2 DTOs, error mapping |
+### Architecture
 
-## Resilience
+Clean Architecture / Hexagonal — Domain → Application → Infrastructure → API.
 
-- **Retry with exponential backoff** on transient LLM failures (configurable attempts + base delay)
-- **Structured JSON logging** with per-request `X-Request-ID` tracing
-- **Typed domain errors** mapped to semantic HTTP status codes (400 / 422 / 502 / 500)
+- **Async throughout** — SQLAlchemy 2.0 async with asyncpg on PostgreSQL
+- **Structured logging** — JSON with per-request `X-Request-ID` correlation
+- **Typed errors** — domain errors mapped to semantic HTTP status codes
 
-## Authentication & Quota
+### Authentication
 
-All scoring endpoints require an **API key** via the `X-API-Key` header.
-Keys are SHA-256 hashed and validated against the `clients` table in PostgreSQL.
-Each request verifies:
+JWT-based login (`POST /api/v1/auth/login`) for the dashboard.
+API key via `X-API-Key` header for programmatic access.
+Keys are SHA-256 hashed; subscriptions and monthly quotas enforced per-request.
 
-1. **Key validity** — exists in DB (with 30s in-memory TTL cache)
-2. **Subscription status** — must be `ACTIVE`
-3. **Monthly quota** — `monthly_requests_used < monthly_requests_limit`
+### Plans
 
-Returns `401` (missing key), `403` (invalid/inactive), or `429` (quota exhausted).
-
-## Rate Limiting
-
-Per-endpoint rate limiting via **slowapi** (default 60 req/min per IP).
-Returns `429 Too Many Requests` with `Retry-After` header.
-
-## Billing (Merchant of Record)
-
-**Lemon Squeezy** webhook integration at `POST /api/v1/billing/webhook` handles
-subscription lifecycle events with instant activation:
-
-| Event | Action |
-|-------|--------|
-| `subscription_created` / `order_created` | Set `ACTIVE`, assign plan tier + quota, reset usage |
-| `subscription_updated` | Upgrade/downgrade plan tier + quota |
-| `subscription_expired` | Set `INACTIVE` |
-| `subscription_payment_failed` | Set `PAST_DUE` |
-| `subscription_cancelled` | Set `CANCELED` |
-| `subscription_resumed` | Set `ACTIVE` |
-
-Plans: **FREE** (100 req/mo), **PRO** (5,000 req/mo), **AGENCY** (25,000 req/mo).
+| Tier | Generations/mo | Price |
+|------|---------------|-------|
+| Free | 100 | $0 |
+| Pro | 5,000 | $49 |
+| Agency | 25,000 | $199 |
 """
 
 
@@ -115,11 +97,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger = structlog.get_logger("lifecycle")
     settings: Settings = app.state.settings
     _configure_logging(settings)
+
     engine = create_engine(settings)
     app.state.engine = engine
     app.state.session_factory = async_session_factory(engine)
 
-    if settings.smtp_host:
+    if settings.resend_api_key:
+        app.state.email_adapter = ResendEmailAdapter(
+            api_key=settings.resend_api_key,
+            from_email=settings.resend_from_email,
+        )
+    elif settings.smtp_host:
         app.state.email_adapter = SMTPEmailAdapter(settings)
     else:
         app.state.email_adapter = ConsoleEmailAdapter()
@@ -143,27 +131,27 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
         openapi_tags=[
             {
-                "name": "Lead qualification",
-                "description": "Ingest, score and persist B2B leads via AI analysis.",
-            },
-            {
-                "name": "health",
-                "description": "Liveness and readiness probes for orchestrators and load balancers.",
+                "name": "Code Generation",
+                "description": "AI-powered code generation and review with project context, architecture rules, and SSE streaming.",
             },
             {
                 "name": "Authentication",
-                "description": "Client registration, JWT login, and password management.",
-            },
-            {
-                "name": "Code Generation",
-                "description": "AI-powered code generation with project context, architecture rules, and SSE streaming.",
+                "description": "Client registration, JWT login, BYOK configuration, and password management.",
             },
             {
                 "name": "Billing",
-                "description": "Lemon Squeezy webhook integration for subscription lifecycle management.",
+                "description": "PayPro Global and Lemon Squeezy webhook receivers for subscription lifecycle.",
+            },
+            {
+                "name": "Lead qualification",
+                "description": "Ingest and score B2B leads via AI analysis.",
+            },
+            {
+                "name": "health",
+                "description": "Liveness and readiness probes.",
             },
         ],
-        contact={"name": "Lead Engine API Support"},
+        contact={"name": "AI Context Engine", "url": settings.base_url},
         license_info={"name": "MIT", "identifier": "MIT"},
     )
 
@@ -180,12 +168,16 @@ def create_app() -> FastAPI:
     )
 
     @app.middleware("http")
-    async def request_id_middleware(request: Request, call_next: object) -> Response:
+    async def security_headers(request: Request, call_next: object) -> Response:
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(request_id=request_id)
         response: Response = await call_next(request)  # type: ignore[misc]
         response.headers["X-Request-ID"] = request_id
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         return response
 
     register_error_handlers(app)

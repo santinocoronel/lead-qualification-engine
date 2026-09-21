@@ -12,6 +12,7 @@ from sqlalchemy import select, update
 
 from src.api.middleware.api_key_auth import invalidate_cache
 from src.domain.value_objects.enums import PlanTier, SubscriptionStatus
+from src.infrastructure.email.templates import subscription_activated_email
 from src.infrastructure.persistence.client_model import ClientModel
 
 logger = structlog.get_logger(__name__)
@@ -100,7 +101,9 @@ async def lemonsqueezy_webhook(
             variant = attributes.get("variant_name", "Free")
             plan_cfg = _VARIANT_TO_PLAN.get(variant, _DEFAULT_PLAN)
             await _activate_subscription(
-                request.app.state.session_factory, user_email, customer_id, plan_cfg
+                request.app.state.session_factory, user_email, customer_id, plan_cfg,
+                email_adapter=request.app.state.email_adapter,
+                base_url=request.app.state.settings.base_url,
             )
 
         case "subscription_updated":
@@ -136,6 +139,8 @@ async def _activate_subscription(
     user_email: str,
     customer_id: str,
     plan_cfg: _PlanConfig,
+    email_adapter: object | None = None,
+    base_url: str = "",
 ) -> None:
     async with session_factory() as session:  # type: ignore[operator]
         async with session.begin():
@@ -165,6 +170,14 @@ async def _activate_subscription(
                     plan=plan_cfg.tier,
                     monthly_limit=plan_cfg.monthly_limit,
                 )
+                if email_adapter:
+                    try:
+                        subj, html = subscription_activated_email(
+                            user_email, plan_cfg.tier.value.title(), plan_cfg.monthly_limit, base_url,
+                        )
+                        await email_adapter.send_email(user_email, subj, html)
+                    except Exception as exc:
+                        logger.warning("subscription_email_failed", error=str(exc))
             else:
                 logger.warning("client_not_found_for_activation", user_email=user_email)
 
@@ -320,7 +333,9 @@ async def paypro_webhook(request: Request) -> JSONResponse:
                 plan_cfg = cfg
                 break
         await _activate_subscription(
-            request.app.state.session_factory, customer_email, order_id, plan_cfg
+            request.app.state.session_factory, customer_email, order_id, plan_cfg,
+            email_adapter=request.app.state.email_adapter,
+            base_url=request.app.state.settings.base_url,
         )
 
     elif event_upper in ("SUBSCRIPTION_CANCELLED", "SUBSCRIPTION_CANCELED"):

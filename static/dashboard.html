@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Context Engine — Dashboard</title>
+<meta name="description" content="AI Context Engine dashboard — generate and review code with your architecture rules, 20 languages, 50+ frameworks, and real-time SSE streaming.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="AI Context Engine — Dashboard">
+<meta property="og:description" content="Generate production-ready code with AI, enforced by your architecture rules.">
+<meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -174,6 +179,49 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
 .api-key-box button{background:var(--primary);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
 .api-key-box button:hover{background:var(--primary-hover)}
 
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:10px}
+.history-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;position:relative}
+.history-item:hover{border-color:var(--primary);background:var(--primary-muted)}
+.history-item .hi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.history-item .hi-task{font-size:13px;font-weight:600;line-height:1.5;flex:1;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.history-item .hi-actions{display:flex;gap:4px;flex-shrink:0}
+.history-item .hi-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:4px;transition:background .15s;line-height:1}
+.history-item .hi-btn:hover{background:rgba(255,255,255,.1)}
+.history-item .hi-btn.fav{color:var(--text-secondary)}
+.history-item .hi-btn.fav.active{color:var(--amber)}
+.history-item .hi-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-secondary)}
+.history-item .hi-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.hi-badge-gen{background:var(--primary-muted);color:var(--primary)}
+.hi-badge-rev{background:var(--cyan-muted);color:var(--cyan)}
+.hi-preview{font-size:11px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;margin-top:10px;padding:10px;background:var(--bg-elevated);border-radius:6px;max-height:80px;overflow:hidden;white-space:pre-wrap;line-height:1.6}
+.history-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.history-empty{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+.history-empty .he-icon{font-size:36px;opacity:.3;margin-bottom:12px}
+.history-empty .he-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+
+/* THEME TOGGLE */
+.theme-btn{background:none;border:1px solid var(--border);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:14px}
+.theme-btn:hover{background:var(--surface-hover);color:var(--text)}
+
+/* LIGHT THEME */
+:root[data-theme="light"]{
+  --bg:#fafafa;--bg-elevated:#fff;--surface:#fff;--surface-hover:#f5f5f5;
+  --border:#e5e5e5;--border-focus:#6366f1;--text:#171717;--text-secondary:#737373;
+  --primary:#6366f1;--primary-hover:#4f46e5;--primary-muted:rgba(99,102,241,.08);
+  --green:#059669;--green-muted:rgba(5,150,105,.08);
+  --red:#dc2626;--red-muted:rgba(220,38,38,.08);
+  --amber:#d97706;--amber-muted:rgba(217,119,6,.08);
+  --cyan:#0891b2;--cyan-muted:rgba(8,145,178,.08);
+}
+:root[data-theme="light"] body{-webkit-font-smoothing:auto}
+:root[data-theme="light"] .top-bar{background:rgba(250,250,250,.92)}
+:root[data-theme="light"] nav{background:rgba(250,250,250,.92)}
+:root[data-theme="light"] .code-body pre{color:#24292f}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#ccc}
+:root[data-theme="light"] .auth-container{background:radial-gradient(ellipse at 50% 0%,rgba(99,102,241,.04) 0%,transparent 60%)}
+:root[data-theme="light"] .auth-box{box-shadow:0 20px 60px rgba(0,0,0,.08)}
+
 @media(max-width:860px){
   .gen-layout{grid-template-columns:1fr}
   .gen-sidebar{order:1}.gen-main{order:2}
@@ -217,8 +265,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   <div class="right">
     <button class="btn-ghost active" onclick="showPage('generate')" id="nav-gen">Generate</button>
     <button class="btn-ghost" onclick="showPage('templates')" id="nav-tpl">Templates</button>
+    <button class="btn-ghost" onclick="showPage('history')" id="nav-hist">History</button>
     <button class="btn-ghost" onclick="showPage('settings')" id="nav-set">Settings</button>
     <div class="divider"></div>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">&#x1F319;</button>
     <div class="user-pill"><div class="avatar" id="user-avatar">S</div><span id="dash-email"></span></div>
     <button class="logout-btn" onclick="doLogout()">Logout</button>
   </div>
@@ -345,6 +395,26 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   </div>
 </div>
 
+<!-- PAGE: HISTORY -->
+<div id="page-history" class="page">
+  <div class="card">
+    <div class="card-header">
+      <h2>Generation History</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge badge-green" id="history-count">0 items</span>
+        <button class="btn-ghost" onclick="clearHistory()" style="color:var(--red);font-size:11px">Clear All</button>
+      </div>
+    </div>
+    <div class="history-filters" id="history-filters">
+      <button class="btn-ghost active" onclick="filterHistory('all',this)">All</button>
+      <button class="btn-ghost" onclick="filterHistory('favorites',this)">&#x2B50; Favorites</button>
+      <button class="btn-ghost" onclick="filterHistory('generate',this)">Generate</button>
+      <button class="btn-ghost" onclick="filterHistory('review',this)">Review</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
 <!-- PAGE: SETTINGS -->
 <div id="page-settings" class="page">
   <div class="stats-row">
@@ -434,11 +504,12 @@ async function showDashboard(){
 
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const map={generate:'page-generate',templates:'page-templates',settings:'page-settings'};
+  const map={generate:'page-generate',templates:'page-templates',history:'page-history',settings:'page-settings'};
   document.getElementById(map[name]).classList.add('active');
   document.querySelectorAll('.top-bar .btn-ghost').forEach(n=>n.classList.remove('active'));
-  const navMap={generate:'nav-gen',templates:'nav-tpl',settings:'nav-set'};
+  const navMap={generate:'nav-gen',templates:'nav-tpl',history:'nav-hist',settings:'nav-set'};
   document.getElementById(navMap[name]).classList.add('active');
+  if(name==='history')renderHistory();
 }
 
 function setMode(mode){
@@ -604,7 +675,10 @@ async function streamRequest(endpoint,body,language){
         }catch(e){}
       }
     }
-    if(!statusTag.classList.contains('status-error')){statusTag.textContent='Complete';statusTag.className='status-tag status-done'}
+    if(!statusTag.classList.contains('status-error')){
+      statusTag.textContent='Complete';statusTag.className='status-tag status-done';
+      addToHistory(currentMode,body.task_description||body.code||'',language,document.getElementById('gen-framework').value,codeEl.textContent);
+    }
   }catch(e){codeEl.textContent='Connection error: '+e.message;statusTag.textContent='Error';statusTag.className='status-tag status-error'}
   resetBtn(origLabel);
 }
@@ -634,6 +708,109 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('dashboard').style.display!=='none'&&document.getElementById('page-generate').classList.contains('active'))doGenerate();
   }
 });
+
+// ---- HISTORY & FAVORITES ----
+function getHistory(){try{return JSON.parse(localStorage.getItem('ace_history')||'[]')}catch(e){return[]}}
+function saveHistory(h){try{localStorage.setItem('ace_history',JSON.stringify(h.slice(0,100)))}catch(e){}}
+
+function addToHistory(mode,task,language,framework,code){
+  const h=getHistory();
+  h.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),mode,task:task.slice(0,500),language,framework,code:code.slice(0,5000),date:new Date().toISOString(),fav:false});
+  saveHistory(h);
+}
+
+function toggleFavorite(id){
+  const h=getHistory();
+  const item=h.find(i=>i.id===id);
+  if(item){item.fav=!item.fav;saveHistory(h);renderHistory()}
+}
+
+function deleteHistoryItem(id){
+  const h=getHistory().filter(i=>i.id!==id);
+  saveHistory(h);renderHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Delete all history?'))return;
+  localStorage.removeItem('ace_history');renderHistory();
+}
+
+let historyFilter='all';
+function filterHistory(filter,btn){
+  historyFilter=filter;
+  document.querySelectorAll('#history-filters .btn-ghost').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderHistory();
+}
+
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  let h=getHistory();
+  if(historyFilter==='favorites')h=h.filter(i=>i.fav);
+  else if(historyFilter==='generate')h=h.filter(i=>i.mode==='generate');
+  else if(historyFilter==='review')h=h.filter(i=>i.mode==='review');
+
+  document.getElementById('history-count').textContent=h.length+' items';
+
+  if(!h.length){
+    list.innerHTML='<div class="history-empty"><div class="he-icon">&#x1F4C4;</div><div class="he-title">'+(historyFilter==='favorites'?'No favorites yet':'No history yet')+'</div><div style="font-size:12px">'+(historyFilter==='favorites'?'Star a generation to save it here.':'Generate or review code to build your history.')+'</div></div>';
+    return;
+  }
+
+  list.innerHTML=h.map(i=>{
+    const d=new Date(i.date);
+    const ts=d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const lang=configData?.languages[i.language]||i.language;
+    return`<div class="history-item" data-id="${i.id}">
+      <div class="hi-top">
+        <div class="hi-task">${escHtml(i.task)}</div>
+        <div class="hi-actions">
+          <button class="hi-btn fav ${i.fav?'active':''}" onclick="event.stopPropagation();toggleFavorite('${i.id}')" title="${i.fav?'Remove from favorites':'Add to favorites'}">&#x2B50;</button>
+          <button class="hi-btn" onclick="event.stopPropagation();deleteHistoryItem('${i.id}')" title="Delete">&#x1F5D1;</button>
+        </div>
+      </div>
+      <div class="hi-meta">
+        <span class="hi-badge ${i.mode==='review'?'hi-badge-rev':'hi-badge-gen'}">${i.mode}</span>
+        <span>${lang}</span>
+        <span>${ts}</span>
+      </div>
+      ${i.code?'<div class="hi-preview">'+escHtml(i.code.slice(0,200))+'</div>':''}
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.history-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const item=getHistory().find(i=>i.id===el.dataset.id);
+      if(!item)return;
+      document.getElementById('code-placeholder').style.display='none';
+      document.getElementById('code-body').style.display='block';
+      document.getElementById('code-content').textContent=item.code;
+      document.getElementById('output-lang').textContent=configData?.languages[item.language]||item.language;
+      document.getElementById('status-tag').textContent='From history';
+      document.getElementById('status-tag').className='status-tag status-done';
+      document.getElementById('gen-task').value=item.task;
+      if(item.language&&configData){
+        document.getElementById('gen-language').value=item.language;
+        updateFrameworks();
+        if(item.framework)document.getElementById('gen-framework').value=item.framework;
+      }
+      setMode(item.mode);
+      showPage('generate');
+    });
+  });
+}
+
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+// ---- THEME TOGGLE ----
+function getTheme(){return localStorage.getItem('ace_theme')||'dark'}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('ace_theme',t);
+  document.getElementById('theme-btn').innerHTML=t==='dark'?'&#x1F319;':'&#x2600;&#xFE0F;';
+}
+function toggleTheme(){setTheme(getTheme()==='dark'?'light':'dark')}
+setTheme(getTheme());
 
 if(accessToken)showDashboard();
 </script>

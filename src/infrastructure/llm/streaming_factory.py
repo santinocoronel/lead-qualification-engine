@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 
 import httpx
 import structlog
@@ -9,6 +11,34 @@ from src.domain.errors.domain_errors import LLMProviderError
 
 logger = structlog.get_logger(__name__)
 
+_STREAM_TIMEOUT = 120
+
+
+@dataclass(frozen=True, slots=True)
+class _ProviderSpec:
+    base_url: str
+    model: str
+    auth_header: str = "Authorization"
+    auth_prefix: str = "Bearer"
+    extra_headers: dict[str, str] | None = None
+    max_tokens: int | None = None
+
+
+_OPENAI_COMPAT_PROVIDERS: dict[str, _ProviderSpec] = {
+    "openai": _ProviderSpec(
+        base_url="https://api.openai.com/v1/chat/completions",
+        model="gpt-4o",
+    ),
+    "deepseek": _ProviderSpec(
+        base_url="https://api.deepseek.com/chat/completions",
+        model="deepseek-coder",
+    ),
+    "mistral": _ProviderSpec(
+        base_url="https://api.mistral.ai/v1/chat/completions",
+        model="codestral-latest",
+    ),
+}
+
 
 async def stream_code_generation(
     provider: str,
@@ -16,24 +46,69 @@ async def stream_code_generation(
     system_prompt: str,
     user_prompt: str,
 ) -> AsyncIterator[str]:
-    match provider:
-        case "gemini":
-            async for chunk in _stream_gemini(api_key, system_prompt, user_prompt):
-                yield chunk
-        case "openai":
-            async for chunk in _stream_openai(api_key, system_prompt, user_prompt):
-                yield chunk
-        case "anthropic":
-            async for chunk in _stream_anthropic(api_key, system_prompt, user_prompt):
-                yield chunk
-        case "deepseek":
-            async for chunk in _stream_deepseek(api_key, system_prompt, user_prompt):
-                yield chunk
-        case "mistral":
-            async for chunk in _stream_mistral(api_key, system_prompt, user_prompt):
-                yield chunk
-        case _:
-            raise LLMProviderError(f"Unsupported provider: {provider}")
+    if provider == "gemini":
+        async for chunk in _stream_gemini(api_key, system_prompt, user_prompt):
+            yield chunk
+        return
+
+    if provider == "anthropic":
+        async for chunk in _stream_anthropic(api_key, system_prompt, user_prompt):
+            yield chunk
+        return
+
+    spec = _OPENAI_COMPAT_PROVIDERS.get(provider)
+    if not spec:
+        raise LLMProviderError(f"Unsupported provider: {provider}")
+
+    async for chunk in _stream_openai_compat(spec, api_key, system_prompt, user_prompt):
+        yield chunk
+
+
+async def _stream_openai_compat(
+    spec: _ProviderSpec,
+    api_key: str,
+    system_prompt: str,
+    user_prompt: str,
+) -> AsyncIterator[str]:
+    headers = {spec.auth_header: f"{spec.auth_prefix} {api_key}"}
+    if spec.extra_headers:
+        headers.update(spec.extra_headers)
+
+    body: dict[str, object] = {
+        "model": spec.model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "stream": True,
+        "temperature": 0.2,
+    }
+    if spec.max_tokens:
+        body["max_tokens"] = spec.max_tokens
+
+    try:
+        async with httpx.AsyncClient(timeout=_STREAM_TIMEOUT) as client:
+            async with client.stream("POST", spec.base_url, headers=headers, json=body) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    payload = line[6:]
+                    if payload == "[DONE]":
+                        break
+                    try:
+                        delta = json.loads(payload)["choices"][0].get("delta", {})
+                        if text := delta.get("content", ""):
+                            yield text
+                    except (json.JSONDecodeError, KeyError, IndexError):
+                        continue
+    except httpx.HTTPStatusError as exc:
+        raise LLMProviderError(f"{spec.model} API error: {exc.response.status_code}") from exc
+    except LLMProviderError:
+        raise
+    except Exception as exc:
+        logger.error("openai_compat_stream_error", provider=spec.model, error=str(exc))
+        raise LLMProviderError(f"{spec.model} streaming failed: {exc}") from exc
 
 
 async def _stream_gemini(
@@ -62,58 +137,11 @@ async def _stream_gemini(
         raise LLMProviderError(f"Gemini streaming error: {exc}") from exc
 
 
-async def _stream_openai(
-    api_key: str, system_prompt: str, user_prompt: str
-) -> AsyncIterator[str]:
-    import json
-
-    try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream(
-                "POST",
-                "https://api.openai.com/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}"},
-                json={
-                    "model": "gpt-4o",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "stream": True,
-                    "temperature": 0.2,
-                },
-            ) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    try:
-                        parsed = json.loads(data)
-                        delta = parsed["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            yield content
-                    except (json.JSONDecodeError, KeyError, IndexError):
-                        continue
-    except httpx.HTTPStatusError as exc:
-        raise LLMProviderError(f"OpenAI API error: {exc.response.status_code}") from exc
-    except LLMProviderError:
-        raise
-    except Exception as exc:
-        logger.error("openai_stream_error", error=str(exc))
-        raise LLMProviderError(f"OpenAI streaming error: {exc}") from exc
-
-
 async def _stream_anthropic(
     api_key: str, system_prompt: str, user_prompt: str
 ) -> AsyncIterator[str]:
-    import json
-
     try:
-        async with httpx.AsyncClient(timeout=120) as client:
+        async with httpx.AsyncClient(timeout=_STREAM_TIMEOUT) as client:
             async with client.stream(
                 "POST",
                 "https://api.anthropic.com/v1/messages",
@@ -137,8 +165,7 @@ async def _stream_anthropic(
                     try:
                         parsed = json.loads(line[6:])
                         if parsed.get("type") == "content_block_delta":
-                            text = parsed.get("delta", {}).get("text", "")
-                            if text:
+                            if text := parsed.get("delta", {}).get("text", ""):
                                 yield text
                     except (json.JSONDecodeError, KeyError):
                         continue
@@ -149,93 +176,3 @@ async def _stream_anthropic(
     except Exception as exc:
         logger.error("anthropic_stream_error", error=str(exc))
         raise LLMProviderError(f"Anthropic streaming error: {exc}") from exc
-
-
-async def _stream_deepseek(
-    api_key: str, system_prompt: str, user_prompt: str
-) -> AsyncIterator[str]:
-    import json
-
-    try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream(
-                "POST",
-                "https://api.deepseek.com/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}"},
-                json={
-                    "model": "deepseek-coder",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "stream": True,
-                    "temperature": 0.2,
-                },
-            ) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    try:
-                        parsed = json.loads(data)
-                        delta = parsed["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            yield content
-                    except (json.JSONDecodeError, KeyError, IndexError):
-                        continue
-    except httpx.HTTPStatusError as exc:
-        raise LLMProviderError(f"DeepSeek API error: {exc.response.status_code}") from exc
-    except LLMProviderError:
-        raise
-    except Exception as exc:
-        logger.error("deepseek_stream_error", error=str(exc))
-        raise LLMProviderError(f"DeepSeek streaming error: {exc}") from exc
-
-
-async def _stream_mistral(
-    api_key: str, system_prompt: str, user_prompt: str
-) -> AsyncIterator[str]:
-    import json
-
-    try:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream(
-                "POST",
-                "https://api.mistral.ai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}"},
-                json={
-                    "model": "codestral-latest",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "stream": True,
-                    "temperature": 0.2,
-                },
-            ) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    try:
-                        parsed = json.loads(data)
-                        delta = parsed["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            yield content
-                    except (json.JSONDecodeError, KeyError, IndexError):
-                        continue
-    except httpx.HTTPStatusError as exc:
-        raise LLMProviderError(f"Mistral API error: {exc.response.status_code}") from exc
-    except LLMProviderError:
-        raise
-    except Exception as exc:
-        logger.error("mistral_stream_error", error=str(exc))
-        raise LLMProviderError(f"Mistral streaming error: {exc}") from exc

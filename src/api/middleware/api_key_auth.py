@@ -132,7 +132,10 @@ async def require_api_key(
             from src.application.services.usage_alert_service import check_usage_alerts
 
             asyncio.create_task(
-                check_usage_alerts(client, session_factory, email_adapter)
+                check_usage_alerts(
+                    client, session_factory, email_adapter,
+                    base_url=request.app.state.settings.base_url,
+                )
             )
 
     structlog.contextvars.bind_contextvars(

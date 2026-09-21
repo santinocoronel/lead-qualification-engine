@@ -1,7 +1,7 @@
 [project]
-name = "lead-qualification-engine"
-version = "1.0.0"
-description = "Enterprise Lead Qualification Engine with AI-powered scoring"
+name = "ai-context-engine"
+version = "2.0.0"
+description = "AI Context Engine — production code from AI, enforced by your architecture rules"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",

@@ -9,8 +9,9 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    app_name: str = "Lead Qualification Engine"
-    app_version: str = "1.0.0"
+    app_name: str = "AI Context Engine"
+    app_version: str = "2.0.0"
+    base_url: str = Field(default="https://lead-qualification-engine-4ltk.onrender.com")
     debug: bool = False
 
     database_url: PostgresDsn = Field(
@@ -32,6 +33,9 @@ class Settings(BaseSettings):
 
     paypro_secret_key: str = Field(default="", description="PayPro Global IPN secret key")
 
+    resend_api_key: str = Field(default="", description="Resend API key for transactional emails")
+    resend_from_email: str = Field(default="AI Context Engine <noreply@aicontextengine.com>")
+
     jwt_secret_key: str = Field(default="change-me-in-production")
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_expire_minutes: int = Field(default=15)
@@ -41,7 +45,7 @@ class Settings(BaseSettings):
     smtp_port: int = Field(default=587)
     smtp_username: str = Field(default="")
     smtp_password: str = Field(default="")
-    smtp_from_email: str = Field(default="noreply@leadengine.io")
+    smtp_from_email: str = Field(default="noreply@aicontextengine.com")
 
     fernet_key: str = Field(default="", description="Fernet key for BYOK encryption")
 

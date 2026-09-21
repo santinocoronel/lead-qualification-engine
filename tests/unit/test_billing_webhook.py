@@ -35,6 +35,9 @@ def _make_mock_settings(webhook_secret: str = "lsq_test_secret") -> MagicMock:
     s.smtp_password = ""
     s.smtp_from_email = "test@test.com"
     s.fernet_key = ""
+    s.resend_api_key = ""
+    s.resend_from_email = ""
+    s.base_url = "http://localhost:8000"
     return s
 
 
@@ -139,6 +142,7 @@ class TestLemonSqueezyWebhook:
         with patch("src.api.app.Settings", return_value=_make_mock_settings(secret)):
             app = create_app()
             app.state.session_factory = mock_factory
+            app.state.email_adapter = AsyncMock()
 
             tc = TestClient(app)
             payload = json.dumps(_make_event("subscription_created", "test@co.com", "Pro")).encode()
@@ -166,6 +170,7 @@ class TestLemonSqueezyWebhook:
         with patch("src.api.app.Settings", return_value=_make_mock_settings(secret)):
             app = create_app()
             app.state.session_factory = mock_factory
+            app.state.email_adapter = AsyncMock()
 
             tc = TestClient(app)
             payload = json.dumps(_make_event("order_created", "test@co.com", "Agency")).encode()
@@ -192,6 +197,7 @@ class TestLemonSqueezyWebhook:
         with patch("src.api.app.Settings", return_value=_make_mock_settings(secret)):
             app = create_app()
             app.state.session_factory = mock_factory
+            app.state.email_adapter = AsyncMock()
 
             tc = TestClient(app)
             payload = json.dumps(_make_event("subscription_expired", "test@co.com")).encode()
@@ -218,6 +224,7 @@ class TestLemonSqueezyWebhook:
         with patch("src.api.app.Settings", return_value=_make_mock_settings(secret)):
             app = create_app()
             app.state.session_factory = mock_factory
+            app.state.email_adapter = AsyncMock()
 
             tc = TestClient(app)
             payload = json.dumps(_make_event("subscription_payment_failed", "test@co.com")).encode()
@@ -244,6 +251,7 @@ class TestLemonSqueezyWebhook:
         with patch("src.api.app.Settings", return_value=_make_mock_settings(secret)):
             app = create_app()
             app.state.session_factory = mock_factory
+            app.state.email_adapter = AsyncMock()
 
             tc = TestClient(app)
             payload = json.dumps(_make_event("subscription_cancelled", "test@co.com")).encode()

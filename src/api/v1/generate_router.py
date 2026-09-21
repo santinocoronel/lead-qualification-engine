@@ -26,6 +26,14 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["Code Generation"])
 
+_VALID_PROVIDERS = frozenset(p.value for p in LLMProvider)
+
+_SSE_HEADERS = {
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no",
+}
+
 
 class ContextPayload(BaseModel):
     language: str = Field(examples=["python_3.12"])
@@ -62,6 +70,47 @@ class ConfigResponse(BaseModel):
     templates: dict[str, TemplateInfo]
 
 
+def _validate_provider(provider: str) -> JSONResponse | None:
+    if provider not in _VALID_PROVIDERS:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": f"Invalid provider. Must be one of: {', '.join(sorted(_VALID_PROVIDERS))}"},
+        )
+    return None
+
+
+def _build_context(ctx: ContextPayload) -> ProjectContext | JSONResponse:
+    try:
+        return ProjectContext(language=ctx.language, framework=ctx.framework, rules=ctx.rules)
+    except ValueError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"detail": str(exc)},
+        )
+
+
+def _sse_response(
+    provider: str,
+    api_key: str,
+    system_prompt: str,
+    user_prompt: str,
+    log_event: str,
+) -> StreamingResponse:
+    async def event_stream() -> AsyncIterator[str]:
+        try:
+            async for chunk in stream_code_generation(
+                provider=provider, api_key=api_key,
+                system_prompt=system_prompt, user_prompt=user_prompt,
+            ):
+                yield f"data: {json.dumps({'content': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as exc:
+            logger.error(log_event, error=str(exc))
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream", headers=_SSE_HEADERS)
+
+
 @router.get(
     "/config",
     response_model=ConfigResponse,
@@ -72,10 +121,8 @@ async def get_config() -> ConfigResponse:
         languages=SUPPORTED_LANGUAGES,
         frameworks=SUPPORTED_FRAMEWORKS,
         rules=ARCHITECTURE_RULES,
-        providers=[p.value for p in LLMProvider],
-        templates={
-            k: TemplateInfo(**v) for k, v in TASK_TEMPLATES.items()
-        },
+        providers=sorted(_VALID_PROVIDERS),
+        templates={k: TemplateInfo(**v) for k, v in TASK_TEMPLATES.items()},
     )
 
 
@@ -85,26 +132,12 @@ async def get_config() -> ConfigResponse:
     response_model=None,
 )
 async def generate_code(request: Request, payload: GenerateCodeRequest) -> StreamingResponse | JSONResponse:
-    valid_providers = {p.value for p in LLMProvider}
-    if payload.provider not in valid_providers:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": f"Invalid provider. Must be one of: {', '.join(valid_providers)}"},
-        )
+    if err := _validate_provider(payload.provider):
+        return err
 
-    try:
-        context = ProjectContext(
-            language=payload.context.language,
-            framework=payload.context.framework,
-            rules=payload.context.rules,
-        )
-    except ValueError as exc:
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"detail": str(exc)},
-        )
-
-    system_prompt = assemble_system_prompt(context)
+    context = _build_context(payload.context)
+    if isinstance(context, JSONResponse):
+        return context
 
     logger.info(
         "code_generation_started",
@@ -114,28 +147,12 @@ async def generate_code(request: Request, payload: GenerateCodeRequest) -> Strea
         rules=context.rules,
     )
 
-    async def event_stream() -> AsyncIterator[str]:
-        try:
-            async for chunk in stream_code_generation(
-                provider=payload.provider,
-                api_key=payload.api_key,
-                system_prompt=system_prompt,
-                user_prompt=payload.task_description,
-            ):
-                yield f"data: {json.dumps({'content': chunk})}\n\n"
-            yield f"data: {json.dumps({'done': True})}\n\n"
-        except Exception as exc:
-            logger.error("code_generation_error", error=str(exc))
-            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
-
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
+    return _sse_response(
+        provider=payload.provider,
+        api_key=payload.api_key,
+        system_prompt=assemble_system_prompt(context),
+        user_prompt=payload.task_description,
+        log_event="code_generation_error",
     )
 
 
@@ -145,26 +162,12 @@ async def generate_code(request: Request, payload: GenerateCodeRequest) -> Strea
     response_model=None,
 )
 async def review_code(request: Request, payload: ReviewCodeRequest) -> StreamingResponse | JSONResponse:
-    valid_providers = {p.value for p in LLMProvider}
-    if payload.provider not in valid_providers:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": f"Invalid provider. Must be one of: {', '.join(valid_providers)}"},
-        )
+    if err := _validate_provider(payload.provider):
+        return err
 
-    try:
-        context = ProjectContext(
-            language=payload.context.language,
-            framework=payload.context.framework,
-            rules=payload.context.rules,
-        )
-    except ValueError as exc:
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"detail": str(exc)},
-        )
-
-    system_prompt = assemble_review_prompt(context)
+    context = _build_context(payload.context)
+    if isinstance(context, JSONResponse):
+        return context
 
     logger.info(
         "code_review_started",
@@ -173,26 +176,10 @@ async def review_code(request: Request, payload: ReviewCodeRequest) -> Streaming
         code_length=len(payload.code),
     )
 
-    async def event_stream() -> AsyncIterator[str]:
-        try:
-            async for chunk in stream_code_generation(
-                provider=payload.provider,
-                api_key=payload.api_key,
-                system_prompt=system_prompt,
-                user_prompt=f"Review this code:\n\n{payload.code}",
-            ):
-                yield f"data: {json.dumps({'content': chunk})}\n\n"
-            yield f"data: {json.dumps({'done': True})}\n\n"
-        except Exception as exc:
-            logger.error("code_review_error", error=str(exc))
-            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
-
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
+    return _sse_response(
+        provider=payload.provider,
+        api_key=payload.api_key,
+        system_prompt=assemble_review_prompt(context),
+        user_prompt=f"Review this code:\n\n{payload.code}",
+        log_event="code_review_error",
     )

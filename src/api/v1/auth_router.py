@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import secrets
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
@@ -15,6 +16,7 @@ from sqlalchemy import select, update
 from src.api.middleware.api_key_auth import hash_api_key
 from src.domain.value_objects.enums import LLMProvider, PlanTier, SubscriptionStatus
 from src.infrastructure.crypto.fernet_utils import encrypt_value
+from src.infrastructure.email.templates import password_reset_email, welcome_email
 from src.infrastructure.persistence.client_model import ClientModel
 
 logger = structlog.get_logger(__name__)
@@ -113,9 +115,6 @@ async def register(request: Request, payload: RegisterRequest) -> RegisterRespon
     raw_api_key = secrets.token_urlsafe(32)
     key_hash = hash_api_key(raw_api_key)
     password_hash = _hash_password(payload.password)
-
-    import uuid
-
     client_id = uuid.uuid4()
 
     async with session_factory() as session:
@@ -133,6 +132,14 @@ async def register(request: Request, payload: RegisterRequest) -> RegisterRespon
             session.add(client)
 
     logger.info("client_registered", email=payload.email, plan=PlanTier.FREE)
+
+    try:
+        email_adapter = request.app.state.email_adapter
+        base_url = str(request.base_url).rstrip("/")
+        subj, html = welcome_email(payload.email, raw_api_key, base_url)
+        await email_adapter.send_email(payload.email, subj, html)
+    except Exception as exc:
+        logger.warning("welcome_email_failed", error=str(exc))
 
     return RegisterResponse(
         client_id=str(client_id),
@@ -208,13 +215,10 @@ async def forgot_password(request: Request, payload: ForgotPasswordRequest) -> M
                     .where(ClientModel.id == client.id)
                     .values(reset_token=reset_token, reset_token_expires_at=expires_at)
                 )
+            base_url = str(request.base_url).rstrip("/")
+            subj, html = password_reset_email(payload.email, reset_token, base_url)
             asyncio.create_task(
-                email_adapter.send_email(
-                    payload.email,
-                    "Password Reset Request",
-                    f"<p>Your password reset token: <strong>{reset_token}</strong></p>"
-                    f"<p>This token expires in 1 hour.</p>",
-                )
+                email_adapter.send_email(payload.email, subj, html)
             )
 
     return MessageResponse(message="If that email exists, a reset link has been sent.")
