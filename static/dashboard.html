@@ -429,6 +429,9 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="card-header"><h2>Usage</h2></div>
     <div class="usage-bar"><div class="fill green" id="usage-fill" style="width:0%"></div></div>
     <div class="usage-text"><span id="usage-pct">0%</span><span id="usage-counts">0 / 0</span></div>
+    <div id="upgrade-cta" style="margin-top:16px;display:none">
+      <a href="/checkout.html?plan=pro" style="display:inline-block;padding:10px 24px;background:var(--primary);color:#fff;border-radius:10px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s">Upgrade to Pro &mdash; $49/mo</a>
+    </div>
   </div>
   <div class="card">
     <div class="card-header"><h2>API Key</h2><span class="badge badge-green">Active</span></div>
@@ -629,6 +632,8 @@ async function loadProfile(){
     fill.style.width=Math.min(pct,100)+'%';fill.className='fill '+(pct>=95?'red':pct>=80?'amber':'green');
     document.getElementById('usage-pct').textContent=pct+'%';
     document.getElementById('usage-counts').textContent=d.monthly_requests_used.toLocaleString()+' / '+d.monthly_requests_limit.toLocaleString();
+    const upgradeCta=document.getElementById('upgrade-cta');
+    if(d.plan_tier==='FREE'){upgradeCta.style.display='block'}else{upgradeCta.style.display='none'}
   }catch(e){console.error(e)}
 }
 

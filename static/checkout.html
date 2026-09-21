@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Context Engine — Checkout</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--bg-elevated:#111114;--surface:#16161a;--surface-hover:#1c1c21;
+  --border:#232329;--text:#eeeef0;--text-secondary:#8b8b95;
+  --primary:#6366f1;--primary-hover:#7c7ff7;--primary-muted:rgba(99,102,241,.1);
+  --green:#10b981;--green-muted:rgba(16,185,129,.1);
+  --red:#ef4444;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+a{color:var(--primary);text-decoration:none}
+a:hover{color:var(--primary-hover)}
+
+.checkout-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;max-width:480px;width:100%;text-align:center}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.logo span{color:var(--primary)}
+.subtitle{color:var(--text-secondary);font-size:13px;margin-bottom:36px}
+
+.plan-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:12px;font-size:13px;font-weight:700;margin-bottom:24px;letter-spacing:.3px}
+.plan-badge.pro{background:var(--primary-muted);color:var(--primary);border:1px solid rgba(99,102,241,.2)}
+.plan-badge.agency{background:var(--green-muted);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+
+.plan-price{font-size:48px;font-weight:900;letter-spacing:-2px;margin-bottom:4px}
+.plan-price span{font-size:16px;font-weight:500;color:var(--text-secondary)}
+.plan-desc{color:var(--text-secondary);font-size:14px;margin-bottom:32px}
+
+.features{text-align:left;margin-bottom:32px;padding:0 8px}
+.features li{list-style:none;padding:8px 0;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.features li:last-child{border-bottom:none}
+.features li::before{content:"\2713";color:var(--green);font-weight:700;font-size:14px}
+
+.form-group{text-align:left;margin-bottom:20px}
+.form-group label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-secondary);margin-bottom:8px}
+.form-group input{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:var(--primary)}
+.form-group input::placeholder{color:#555}
+
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:inherit;letter-spacing:.3px;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 16px rgba(99,102,241,.3)}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 24px rgba(99,102,241,.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.secure-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;font-size:11px;color:var(--text-secondary)}
+
+.error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:20px;display:none}
+
+.back-link{display:block;margin-top:24px;font-size:13px;color:var(--text-secondary)}
+.back-link:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="checkout-card">
+  <div class="logo">AI Context<span>Engine</span></div>
+  <div class="subtitle">Upgrade your plan</div>
+
+  <div id="plan-badge" class="plan-badge pro">PRO</div>
+  <div id="plan-price" class="plan-price">$49<span>/mo</span></div>
+  <div id="plan-desc" class="plan-desc">For professional developers</div>
+
+  <ul id="plan-features" class="features">
+    <li>5,000 generations / month</li>
+    <li>All 20 languages & 50+ frameworks</li>
+    <li>API access for CI/CD integration</li>
+    <li>Usage analytics & email alerts</li>
+    <li>Priority support</li>
+  </ul>
+
+  <div id="error-msg" class="error-msg"></div>
+
+  <div class="form-group">
+    <label>Email (same as your account)</label>
+    <input type="email" id="checkout-email" placeholder="you@company.com" required>
+  </div>
+
+  <button id="checkout-btn" class="btn btn-primary" onclick="startCheckout()">
+    Continue to Payment
+  </button>
+
+  <div class="secure-note">&#x1F512; Secure checkout powered by PayPro Global</div>
+  <a href="/" class="back-link">&larr; Back to AI Context Engine</a>
+</div>
+
+<script>
+const PLANS = {
+  pro: {
+    name: 'PRO',
+    price: '$49',
+    desc: 'For professional developers',
+    badge_class: 'pro',
+    features: [
+      '5,000 generations / month',
+      'All 20 languages & 50+ frameworks',
+      'API access for CI/CD integration',
+      'Usage analytics & email alerts',
+      'Priority support',
+    ],
+  },
+  agency: {
+    name: 'AGENCY',
+    price: '$199',
+    desc: 'For teams and agencies',
+    badge_class: 'agency',
+    features: [
+      '25,000 generations / month',
+      'Everything in Pro',
+      'Custom rules & templates',
+      'Webhook integrations',
+      'Dedicated support + SLA',
+    ],
+  },
+};
+
+const params = new URLSearchParams(window.location.search);
+const planKey = params.get('plan') || 'pro';
+const plan = PLANS[planKey] || PLANS.pro;
+
+document.getElementById('plan-badge').textContent = plan.name;
+document.getElementById('plan-badge').className = 'plan-badge ' + plan.badge_class;
+document.getElementById('plan-price').innerHTML = plan.price + '<span>/mo</span>';
+document.getElementById('plan-desc').textContent = plan.desc;
+document.getElementById('plan-features').innerHTML = plan.features.map(f => '<li>' + f + '</li>').join('');
+
+const emailInput = document.getElementById('checkout-email');
+const storedEmail = localStorage.getItem('ace_user_email');
+if (storedEmail) emailInput.value = storedEmail;
+
+async function startCheckout() {
+  const email = emailInput.value.trim();
+  const errorEl = document.getElementById('error-msg');
+  const btn = document.getElementById('checkout-btn');
+
+  errorEl.style.display = 'none';
+
+  if (!email || !email.includes('@')) {
+    errorEl.textContent = 'Please enter a valid email address.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Redirecting...';
+
+  try {
+    const resp = await fetch('/api/v1/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: planKey, email: email }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      errorEl.textContent = data.detail || data.error || 'Something went wrong.';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Continue to Payment';
+      return;
+    }
+
+    localStorage.setItem('ace_user_email', email);
+    window.location.href = data.checkout_url;
+  } catch (e) {
+    errorEl.textContent = 'Connection error. Please try again.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Continue to Payment';
+  }
+}
+
+emailInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') startCheckout();
+});
+</script>
+
+</body>
+</html>

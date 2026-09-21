@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     lemonsqueezy_webhook_secret: str = Field(default="")
 
     paypro_secret_key: str = Field(default="", description="PayPro Global IPN secret key")
+    paypro_product_id_pro: str = Field(default="", description="PayPro Global product ID for Pro plan")
+    paypro_product_id_agency: str = Field(default="", description="PayPro Global product ID for Agency plan")
 
     resend_api_key: str = Field(default="", description="Resend API key for transactional emails")
     resend_from_email: str = Field(default="AI Context Engine <noreply@aicontextengine.com>")

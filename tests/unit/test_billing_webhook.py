@@ -38,6 +38,8 @@ def _make_mock_settings(webhook_secret: str = "lsq_test_secret") -> MagicMock:
     s.resend_api_key = ""
     s.resend_from_email = ""
     s.base_url = "http://localhost:8000"
+    s.paypro_product_id_pro = ""
+    s.paypro_product_id_agency = ""
     return s
 
 

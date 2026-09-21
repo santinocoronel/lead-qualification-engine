@@ -4,10 +4,12 @@ import hashlib
 import hmac
 import json
 from dataclasses import dataclass
+from urllib.parse import urlencode
 
 import structlog
 from fastapi import APIRouter, Header, Request, status
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import select, update
 
 from src.api.middleware.api_key_auth import invalidate_cache
@@ -365,3 +367,58 @@ async def paypro_webhook(request: Request) -> JSONResponse:
         logger.debug("paypro_unhandled_event", event_type=event_type)
 
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
+
+
+class CheckoutRequest(BaseModel):
+    plan: str
+    email: EmailStr
+
+
+_PAYPRO_CHECKOUT_BASE = "https://store.payproglobal.com/checkout"
+
+
+@router.post(
+    "/checkout",
+    status_code=status.HTTP_200_OK,
+    summary="Generate PayPro Global checkout URL for a plan",
+)
+async def create_checkout(request: Request, payload: CheckoutRequest) -> JSONResponse:
+    settings = request.app.state.settings
+
+    product_ids: dict[str, str] = {
+        "pro": settings.paypro_product_id_pro,
+        "agency": settings.paypro_product_id_agency,
+    }
+
+    product_id = product_ids.get(payload.plan)
+    if not product_id:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": f"Invalid plan: {payload.plan}. Must be 'pro' or 'agency'."},
+        )
+
+    if not product_id.strip():
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "Payment is not configured yet. Please contact support."},
+        )
+
+    checkout_params = urlencode({
+        "products[1][id]": product_id,
+        "billing-email": payload.email,
+        "x-custom-user_email": payload.email,
+        "currency": "USD",
+        "page-template": "regular",
+    })
+    checkout_url = f"{_PAYPRO_CHECKOUT_BASE}?{checkout_params}"
+
+    logger.info(
+        "checkout_url_generated",
+        plan=payload.plan,
+        email=payload.email,
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"checkout_url": checkout_url},
+    )
