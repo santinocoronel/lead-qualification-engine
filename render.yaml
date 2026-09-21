@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: lead-qualification-engine
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /ping
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lead-engine-db
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LEMONSQUEEZY_WEBHOOK_SECRET
+        sync: false
+      - key: API_RATE_LIMIT
+        value: "60"
+      - key: CORS_ORIGINS
+        value: '["*"]'
+      - key: LOG_LEVEL
+        value: INFO
+    autoDeploy: true
+
+databases:
+  - name: lead-engine-db
+    plan: starter
+    databaseName: lead_engine
+    postgresMajorVersion: "16"
+    region: oregon

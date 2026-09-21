@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from src.infrastructure.persistence.database import Base
+from src.infrastructure.persistence.client_model import ClientModel  # noqa: F401
 from src.infrastructure.persistence.lead_model import LeadModel  # noqa: F401
 
 config = context.config

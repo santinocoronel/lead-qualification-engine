@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from src.api.app import create_app
 from src.api.dependencies import get_use_case
+from src.api.middleware.api_key_auth import require_api_key
 from src.application.use_cases.ingest_and_qualify_lead import (
     IngestAndQualifyLeadUseCase,
     QualifiedLeadResult,
@@ -50,6 +51,20 @@ def client(mock_use_case: AsyncMock) -> TestClient:
     mock_settings.database_url = "postgresql+asyncpg://test:test@localhost/test"
     mock_settings.db_pool_size = 5
     mock_settings.db_max_overflow = 10
+    mock_settings.api_rate_limit = 1000
+    mock_settings.lemonsqueezy_webhook_secret = ""
+    mock_settings.log_level = "WARNING"
+    mock_settings.log_format = "json"
+    mock_settings.jwt_secret_key = "test-secret"
+    mock_settings.jwt_algorithm = "HS256"
+    mock_settings.jwt_access_token_expire_minutes = 15
+    mock_settings.jwt_refresh_token_expire_days = 7
+    mock_settings.smtp_host = ""
+    mock_settings.smtp_port = 587
+    mock_settings.smtp_username = ""
+    mock_settings.smtp_password = ""
+    mock_settings.smtp_from_email = "test@test.com"
+    mock_settings.fernet_key = ""
 
     with patch("src.api.app.Settings", return_value=mock_settings):
         app = create_app()
@@ -58,6 +73,12 @@ def client(mock_use_case: AsyncMock) -> TestClient:
             return mock_use_case  # type: ignore[return-value]
 
         app.dependency_overrides[get_use_case] = _override
+        mock_client = MagicMock()
+        mock_client.subscription_status = "ACTIVE"
+        mock_client.monthly_requests_used = 0
+        mock_client.monthly_requests_limit = 5000
+        mock_client.plan_tier = "PRO"
+        app.dependency_overrides[require_api_key] = lambda: mock_client
         with TestClient(app) as tc:
             yield tc
 

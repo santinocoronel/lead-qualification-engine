@@ -22,8 +22,26 @@ class Settings(BaseSettings):
     gemini_api_key: str = Field(description="Google Gemini API key")
     gemini_model: str = Field(default="gemini-2.0-flash")
     llm_timeout_seconds: int = Field(default=30, ge=5, le=120)
-    llm_max_retries: int = Field(default=3, ge=1, le=10, description="Max retry attempts on transient LLM failures")
-    llm_retry_base_delay: float = Field(default=1.0, ge=0.1, le=10.0, description="Base delay in seconds for exponential backoff")
+    llm_max_retries: int = Field(default=3, ge=1, le=10)
+    llm_retry_base_delay: float = Field(default=1.0, ge=0.1, le=10.0)
 
     cors_origins: list[str] = Field(default=["*"])
     api_rate_limit: int = Field(default=60, description="Requests per minute per IP")
+
+    lemonsqueezy_webhook_secret: str = Field(default="")
+
+    jwt_secret_key: str = Field(default="change-me-in-production")
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_access_token_expire_minutes: int = Field(default=15)
+    jwt_refresh_token_expire_days: int = Field(default=7)
+
+    smtp_host: str = Field(default="")
+    smtp_port: int = Field(default=587)
+    smtp_username: str = Field(default="")
+    smtp_password: str = Field(default="")
+    smtp_from_email: str = Field(default="noreply@leadengine.io")
+
+    fernet_key: str = Field(default="", description="Fernet key for BYOK encryption")
+
+    log_level: str = Field(default="INFO")
+    log_format: str = Field(default="json")
