@@ -12,7 +12,7 @@ from src.infrastructure.llm.gemini_analyzer import GeminiLeadAnalyzer
 def _make_settings() -> MagicMock:
     s = MagicMock()
     s.gemini_api_key = "test-key"
-    s.gemini_model = "gemini-2.5-flash"
+    s.gemini_model = "gemini-3.8-flash"
     s.llm_timeout_seconds = 5
     s.llm_max_retries = 3
     s.llm_retry_base_delay = 0.01

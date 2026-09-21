@@ -42,20 +42,24 @@ _OPENAI_COMPAT_PROVIDERS: dict[str, _ProviderSpec] = {
 
 PROVIDER_MODELS: dict[str, list[tuple[str, str]]] = {
     "gemini": [
-        ("gemini-2.5-flash", "Gemini 2.5 Flash"),
-        ("gemini-2.5-pro", "Gemini 2.5 Pro"),
-        ("gemini-2.5-flash-lite-preview-06-17", "Gemini 2.5 Flash Lite"),
+        ("gemini-3.8-flash", "Gemini 3.8 Flash"),
+        ("gemini-3.7-flash", "Gemini 3.7 Flash"),
+        ("gemini-3.6-flash", "Gemini 3.6 Flash"),
+        ("gemini-3.5-flash-lite", "Gemini 3.5 Flash-Lite"),
+        ("gemini-3.1-pro", "Gemini 3.1 Pro"),
     ],
     "openai": [
         ("gpt-4o", "GPT-4o"),
         ("gpt-4o-mini", "GPT-4o Mini"),
         ("gpt-4.1", "GPT-4.1"),
         ("gpt-4.1-mini", "GPT-4.1 Mini"),
-        ("o3-mini", "o3 Mini"),
+        ("o3-mini", "o3-mini"),
+        ("gpt-oss-120b", "GPT-OSS 120B"),
     ],
     "anthropic": [
-        ("claude-sonnet-4-20250514", "Claude Sonnet 4"),
-        ("claude-haiku-4-20250414", "Claude Haiku 4"),
+        ("claude-sonnet-4-6-20260514", "Claude Sonnet 4.6 (Thinking)"),
+        ("claude-opus-4-6-20260514", "Claude Opus 4.6 (Thinking)"),
+        ("claude-haiku-4-5-20251001", "Claude Haiku 4.5"),
     ],
     "deepseek": [
         ("deepseek-chat", "DeepSeek V3"),
@@ -153,7 +157,7 @@ async def _stream_openai_compat(
 
 
 async def _stream_gemini(
-    api_key: str, system_prompt: str, user_prompt: str, model: str = "gemini-2.5-flash"
+    api_key: str, system_prompt: str, user_prompt: str, model: str = "gemini-3.8-flash"
 ) -> AsyncIterator[str]:
     try:
         from google import genai
@@ -179,7 +183,7 @@ async def _stream_gemini(
 
 
 async def _stream_anthropic(
-    api_key: str, system_prompt: str, user_prompt: str, model: str = "claude-sonnet-4-20250514"
+    api_key: str, system_prompt: str, user_prompt: str, model: str = "claude-sonnet-4-6-20260514"
 ) -> AsyncIterator[str]:
     try:
         async with httpx.AsyncClient(timeout=_STREAM_TIMEOUT) as client:
