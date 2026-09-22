@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select, update
 
-from src.api.middleware.api_key_auth import hash_api_key
+from src.api.middleware.api_key_auth import hash_api_key, invalidate_cache
 from src.domain.value_objects.enums import LLMProvider, PlanTier, SubscriptionStatus
 from src.infrastructure.crypto.fernet_utils import encrypt_value
 from src.infrastructure.email.templates import password_reset_email, welcome_email
@@ -76,6 +76,10 @@ class ProfileResponse(BaseModel):
     monthly_requests_used: int
     monthly_requests_limit: int
     custom_llm_provider: str | None = None
+
+
+class RegenerateKeyResponse(BaseModel):
+    api_key: str
 
 
 class BYOKRequest(BaseModel):
@@ -310,6 +314,42 @@ async def get_me(request: Request) -> ProfileResponse | JSONResponse:
         monthly_requests_limit=client.monthly_requests_limit,
         custom_llm_provider=client.custom_llm_provider,
     )
+
+
+@router.post(
+    "/me/regenerate-key",
+    response_model=RegenerateKeyResponse,
+    summary="Regenerate the platform API key (X-API-Key), invalidating the old one",
+)
+async def regenerate_key(request: Request) -> RegenerateKeyResponse | JSONResponse:
+    """Issue a new platform API key for the current account.
+
+    The raw key is only ever returned here and at registration — it's
+    hashed at rest, so this is the recovery path for anyone who lost the
+    key their browser had saved (e.g. a fresh browser, cleared storage, or
+    an account created before the dashboard started sending it). The old
+    key stops working immediately: its cache entry is invalidated and its
+    hash is overwritten.
+    """
+    client = await _get_current_client(request)
+    if not client:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": "Invalid or expired token."})
+
+    new_raw_key = secrets.token_urlsafe(32)
+    new_hash = hash_api_key(new_raw_key)
+
+    session_factory = request.app.state.session_factory
+    async with session_factory() as session:
+        async with session.begin():
+            await session.execute(
+                update(ClientModel)
+                .where(ClientModel.id == client.id)
+                .values(api_key_hash=new_hash)
+            )
+
+    invalidate_cache(client.api_key_hash)
+    logger.info("api_key_regenerated", email=client.owner_email)
+    return RegenerateKeyResponse(api_key=new_raw_key)
 
 
 @router.put(

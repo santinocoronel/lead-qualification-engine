@@ -201,6 +201,18 @@ def create_app() -> FastAPI:
         async def checkout_page() -> FileResponse:
             return FileResponse(static_dir / "checkout.html")
 
+        @app.get("/terms.html", include_in_schema=False)
+        async def terms_page() -> FileResponse:
+            return FileResponse(static_dir / "terms.html")
+
+        @app.get("/privacy.html", include_in_schema=False)
+        async def privacy_page() -> FileResponse:
+            return FileResponse(static_dir / "privacy.html")
+
+        @app.get("/refunds.html", include_in_schema=False)
+        async def refunds_page() -> FileResponse:
+            return FileResponse(static_dir / "refunds.html")
+
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
     return app

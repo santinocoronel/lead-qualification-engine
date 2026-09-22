@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-from fastapi import FastAPI, Depends, status
+from fastapi import Depends, FastAPI, status
 from fastapi.testclient import TestClient
 
-from src.api.middleware.api_key_auth import hash_api_key, require_api_key, invalidate_cache
+from src.api.middleware.api_key_auth import (
+    hash_api_key,
+    invalidate_cache,
+    require_api_key,
+    require_metered_api_key,
+)
 
 
 def _mock_client_record(
@@ -52,6 +56,10 @@ def _build_app() -> FastAPI:
 
     @app.get("/protected", dependencies=[Depends(require_api_key)])
     async def protected() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @app.get("/metered", dependencies=[Depends(require_metered_api_key)])
+    async def metered() -> dict[str, str]:
         return {"status": "ok"}
 
     return app
@@ -135,3 +143,76 @@ class TestRequireApiKey:
         client = TestClient(app)
         response = client.get("/protected", headers={"X-API-Key": "valid-key-123"})
         assert response.status_code == status.HTTP_200_OK
+
+    def test_saved_byok_config_skips_metering(self) -> None:
+        """require_api_key exempts accounts with a saved BYOK config from quota."""
+        app = _build_app()
+        record = _mock_client_record(
+            subscription_status="ACTIVE",
+            monthly_requests_used=5000,
+            monthly_requests_limit=5000,
+        )
+        record.encrypted_api_key = "encrypted-blob"
+        record.custom_llm_provider = "openai"
+        mock_session = _build_mock_session(return_client=record)
+        app.state.session_factory.return_value = mock_session
+
+        client = TestClient(app)
+        response = client.get("/protected", headers={"X-API-Key": "valid-key-123"})
+        assert response.status_code == status.HTTP_200_OK
+        # exempted from metering: the counter must not have moved
+        assert record.monthly_requests_used == 5000
+
+
+class TestRequireMeteredApiKey:
+    """Covers the dependency used by code generation/review — regression test
+    for the bug where those endpoints were reachable with no platform auth
+    and no quota enforcement at all."""
+
+    def setup_method(self) -> None:
+        invalidate_cache()
+
+    def test_missing_header_returns_401(self) -> None:
+        app = _build_app()
+        client = TestClient(app)
+        response = client.get("/metered")
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_unknown_key_returns_403(self) -> None:
+        app = _build_app()
+        mock_session = _build_mock_session(return_client=None)
+        app.state.session_factory.return_value = mock_session
+
+        client = TestClient(app)
+        response = client.get("/metered", headers={"X-API-Key": "invalid-key"})
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_quota_exceeded_returns_429(self) -> None:
+        app = _build_app()
+        record = _mock_client_record(monthly_requests_used=5000, monthly_requests_limit=5000)
+        mock_session = _build_mock_session(return_client=record)
+        app.state.session_factory.return_value = mock_session
+
+        client = TestClient(app)
+        response = client.get("/metered", headers={"X-API-Key": "valid-key-123"})
+        assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+
+    def test_saved_byok_config_does_not_skip_metering(self) -> None:
+        """The core fix: a saved BYOK config must not exempt code-generation
+        calls from the plan quota, because those endpoints already require a
+        per-request provider key regardless — the platform never spends its
+        own LLM budget there, so there's nothing for BYOK to be exempting."""
+        app = _build_app()
+        record = _mock_client_record(monthly_requests_used=4999, monthly_requests_limit=5000)
+        record.encrypted_api_key = "encrypted-blob"
+        record.custom_llm_provider = "openai"
+        mock_session = _build_mock_session(return_client=record)
+        app.state.session_factory.return_value = mock_session
+
+        client = TestClient(app)
+        first = client.get("/metered", headers={"X-API-Key": "valid-key-123"})
+        assert first.status_code == status.HTTP_200_OK
+        assert record.monthly_requests_used == 5000  # metered despite saved BYOK
+
+        second = client.get("/metered", headers={"X-API-Key": "valid-key-123"})
+        assert second.status_code == status.HTTP_429_TOO_MANY_REQUESTS

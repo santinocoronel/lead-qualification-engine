@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from src.api.app import create_app
@@ -245,3 +244,65 @@ class TestResetPassword:
                 json={"token": "invalid-token", "new_password": "newsecurepass"},
             )
             assert response.status_code == 400
+
+
+def _make_access_token(email: str, settings: MagicMock) -> str:
+    from datetime import UTC, datetime, timedelta
+
+    import jwt
+
+    payload = {
+        "sub": email,
+        "client_id": "fake-uuid",
+        "type": "access",
+        "exp": datetime.now(UTC) + timedelta(minutes=15),
+    }
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
+class TestRegenerateKey:
+    """Recovery path for the platform API key: without this, anyone who
+    registered before the dashboard sent X-API-Key, or who lost it (new
+    browser, cleared storage), would be locked out of code generation once
+    those endpoints require the header."""
+
+    def setup_method(self) -> None:
+        invalidate_cache()
+
+    def test_requires_valid_session(self) -> None:
+        with patch("src.api.app.Settings", return_value=_make_mock_settings()):
+            app = create_app()
+            tc = TestClient(app)
+            response = tc.post("/api/v1/auth/me/regenerate-key")
+            assert response.status_code == 401
+
+    def test_issues_new_key_and_invalidates_old_hash(self) -> None:
+        settings = _make_mock_settings()
+        mock_factory, mock_session = _build_mock_session_factory()
+
+        mock_client = MagicMock()
+        mock_client.id = "fake-uuid"
+        mock_client.owner_email = "user@example.com"
+        mock_client.api_key_hash = "old-hash-value"
+
+        mock_select_result = MagicMock()
+        mock_select_result.scalar_one_or_none.return_value = mock_client
+        mock_session.execute = AsyncMock(return_value=mock_select_result)
+
+        with patch("src.api.app.Settings", return_value=settings):
+            app = create_app()
+            app.state.session_factory = mock_factory
+
+            token = _make_access_token("user@example.com", settings)
+            tc = TestClient(app)
+            response = tc.post(
+                "/api/v1/auth/me/regenerate-key",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+
+            assert response.status_code == 200
+            body = response.json()
+            assert "api_key" in body
+            assert len(body["api_key"]) > 20
+            # the UPDATE statement was issued to overwrite the stored hash
+            assert mock_session.execute.await_count >= 2

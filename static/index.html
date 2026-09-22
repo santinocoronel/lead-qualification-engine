@@ -243,7 +243,7 @@ footer .links a{color:var(--text-secondary);font-size:12px;font-weight:500}
     <div class="feature-card">
       <div class="icon icon-green">&#x1F511;</div>
       <h3>Bring Your Own Key</h3>
-      <p>Use your own OpenAI, Anthropic, or Gemini API key. Your key is sent directly to the provider, never stored. Your costs, your control.</p>
+      <p>Use your own OpenAI, Anthropic, or Gemini API key. Sent directly to the provider per-request by default; saving one for convenience is optional and encrypted at rest. Your costs, your control.</p>
     </div>
     <div class="feature-card">
       <div class="icon icon-amber">&#x1F3D7;</div>
@@ -358,7 +358,7 @@ curl -N -X POST /api/v1/generate-code \
   <div class="security-grid">
     <div class="sec-card">
       <div class="icon">&#x1F512;</div>
-      <div><h3>Zero Key Storage</h3><p>Your API key is sent directly to the AI provider per-request and immediately discarded. Never written to disk or database.</p></div>
+      <div><h3>Storage Is Opt-In</h3><p>By default, your API key is sent directly to the AI provider per-request and never written to disk or database. If you save a default key in Settings for convenience, it's encrypted at rest (Fernet/AES-128) and you can remove it anytime.</p></div>
     </div>
     <div class="sec-card">
       <div class="icon">&#x1F6E1;</div>
@@ -450,6 +450,9 @@ curl -N -X POST /api/v1/generate-code \
     <a href="/docs">API Docs</a>
     <a href="/dashboard.html">Dashboard</a>
     <a href="/health">Status</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/refunds.html">Refunds</a>
   </div>
 </div>
 </footer>

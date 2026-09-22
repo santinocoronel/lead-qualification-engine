@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 from collections.abc import AsyncIterator
+from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
+from src.api.middleware.api_key_auth import require_metered_api_key
 from src.application.services.prompt_assembler import (
     TASK_TEMPLATES,
     assemble_review_prompt,
@@ -21,6 +23,7 @@ from src.domain.entities.project_context import (
 )
 from src.domain.value_objects.enums import LLMProvider
 from src.infrastructure.llm.streaming_factory import PROVIDER_MODELS, stream_code_generation
+from src.infrastructure.persistence.client_model import ClientModel
 
 logger = structlog.get_logger(__name__)
 
@@ -145,7 +148,11 @@ async def get_config() -> ConfigResponse:
     summary="Generate code with AI using project context (SSE streaming)",
     response_model=None,
 )
-async def generate_code(request: Request, payload: GenerateCodeRequest) -> StreamingResponse | JSONResponse:
+async def generate_code(
+    request: Request,
+    payload: GenerateCodeRequest,
+    client: Annotated[ClientModel, Depends(require_metered_api_key)],
+) -> StreamingResponse | JSONResponse:
     if err := _validate_provider(payload.provider):
         return err
 
@@ -155,6 +162,7 @@ async def generate_code(request: Request, payload: GenerateCodeRequest) -> Strea
 
     logger.info(
         "code_generation_started",
+        client_email=client.owner_email,
         provider=payload.provider,
         language=context.language,
         framework=context.framework,
@@ -176,7 +184,11 @@ async def generate_code(request: Request, payload: GenerateCodeRequest) -> Strea
     summary="Review code against architecture rules (SSE streaming)",
     response_model=None,
 )
-async def review_code(request: Request, payload: ReviewCodeRequest) -> StreamingResponse | JSONResponse:
+async def review_code(
+    request: Request,
+    payload: ReviewCodeRequest,
+    client: Annotated[ClientModel, Depends(require_metered_api_key)],
+) -> StreamingResponse | JSONResponse:
     if err := _validate_provider(payload.provider):
         return err
 
@@ -186,6 +198,7 @@ async def review_code(request: Request, payload: ReviewCodeRequest) -> Streaming
 
     logger.info(
         "code_review_started",
+        client_email=client.owner_email,
         provider=payload.provider,
         language=context.language,
         code_length=len(payload.code),

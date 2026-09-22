@@ -56,10 +56,27 @@ def invalidate_cache(key_hash: str | None = None) -> None:
         _client_cache.clear()
 
 
-async def require_api_key(
+async def _authenticate_and_meter(
     request: Request,
-    api_key: str | None = Security(_api_key_header),
+    api_key: str | None,
+    *,
+    force_meter: bool,
 ) -> ClientModel:
+    """Resolve the caller's account from X-API-Key and enforce the plan quota.
+
+    `force_meter` controls whether an account-level BYOK config (saved via
+    `/me/byok`) exempts the call from the monthly quota:
+
+    - False (used by `require_api_key`, e.g. the leads endpoints): a saved
+      BYOK config means the platform never spends its own LLM budget on the
+      request, so it's fair to skip metering.
+    - True (used by `require_metered_api_key`, e.g. code generation): the
+      caller always supplies their own LLM provider key per-request on these
+      endpoints regardless of any saved BYOK config, so the account-level
+      BYOK flag says nothing about whether *this* request used a shared
+      platform budget. The thing being billed here is generations against
+      the plan, not LLM spend — so it always counts.
+    """
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -97,7 +114,7 @@ async def require_api_key(
             detail=f"Subscription is {client.subscription_status}. Activate your plan to continue.",
         )
 
-    is_byok = bool(client.encrypted_api_key and client.custom_llm_provider)
+    is_byok = (not force_meter) and bool(client.encrypted_api_key and client.custom_llm_provider)
 
     if not is_byok:
         if client.monthly_requests_used >= client.monthly_requests_limit:
@@ -146,3 +163,29 @@ async def require_api_key(
         byok=is_byok,
     )
     return client
+
+
+async def require_api_key(
+    request: Request,
+    api_key: str | None = Security(_api_key_header),
+) -> ClientModel:
+    """Authenticate the caller and meter usage, exempting saved BYOK accounts.
+
+    Use this on endpoints where the platform may spend its own LLM budget
+    on the caller's behalf when they have no BYOK config saved.
+    """
+    return await _authenticate_and_meter(request, api_key, force_meter=False)
+
+
+async def require_metered_api_key(
+    request: Request,
+    api_key: str | None = Security(_api_key_header),
+) -> ClientModel:
+    """Authenticate the caller and ALWAYS meter usage against the plan quota.
+
+    Use this on endpoints where the caller supplies their own LLM provider
+    key on every request (e.g. code generation) — the platform never spends
+    its own LLM budget there, so an account-level BYOK config must not be
+    read as a reason to skip counting the generation against the plan.
+    """
+    return await _authenticate_and_meter(request, api_key, force_meter=True)

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — AI Context Engine</title>
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090b;--surface:#16161a;--border:#232329;--text:#eeeef0;--text-secondary:#8b8b95;--primary:#6366f1}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:800px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center}
+nav .container{display:flex;justify-content:space-between;align-items:center;width:100%}
+nav .logo{font-size:18px;font-weight:800}
+nav .logo span{color:var(--primary)}
+main{padding:64px 0 96px}
+h1{font-size:32px;font-weight:800;margin-bottom:8px}
+.updated{color:var(--text-secondary);font-size:13px;margin-bottom:40px}
+h2{font-size:19px;font-weight:700;margin:36px 0 12px}
+p,li{color:#c9c9d1;font-size:15px;margin-bottom:12px}
+ul,ol{margin-left:22px;margin-bottom:12px}
+strong{color:var(--text)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:#c9c9d1}
+th{color:var(--text);font-weight:600}
+.callout{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:20px 0;font-size:13px;color:var(--text-secondary)}
+footer{border-top:1px solid var(--border);padding:32px 0;color:var(--text-secondary);font-size:12px}
+</style>
+</head>
+<body>
+<nav><div class="container"><a href="/" class="logo">AI<span>Context</span>Engine</a><a href="/">&larr; Back home</a></div></nav>
+<main class="container">
+<h1>Privacy Policy</h1>
+<p class="updated">Last updated: September 22, 2026</p>
+
+<div class="callout">This is a plain-language draft covering the essentials for launch. If you serve users in the EU/UK, California, or other jurisdictions with specific data-protection statutes (GDPR, CCPA, etc.), have this reviewed against those requirements before relying on it.</div>
+
+<h2>1. What we collect</h2>
+<table>
+<tr><th>Data</th><th>Why</th></tr>
+<tr><td>Email address, hashed password</td><td>Account creation and login</td></tr>
+<tr><td>Hashed platform API key (<code>X-API-Key</code>)</td><td>Authenticating programmatic and dashboard requests</td></tr>
+<tr><td>Encrypted AI provider key (only if you opt in via Settings &rarr; BYOK)</td><td>Convenience — so you don't have to paste it every time</td></tr>
+<tr><td>Plan tier, monthly usage counters</td><td>Enforcing plan quotas and billing</td></tr>
+<tr><td>Task descriptions and code you submit for generation/review</td><td>Forwarded to the AI provider you selected to produce a response; not retained by us beyond what's needed to stream the result back to you</td></tr>
+<tr><td>Request logs (timestamps, request IDs, endpoint, status code)</td><td>Debugging, abuse prevention, and reliability</td></tr>
+<tr><td>Billing identifiers from our payment processor</td><td>Matching your subscription status; we do not receive or store your card number</td></tr>
+</table>
+
+<h2>2. What we don't do</h2>
+<ul>
+<li>We do not use your prompts, code, or generated output to train any AI model, ours or anyone else's.</li>
+<li>We do not sell your personal data.</li>
+<li>We do not use tracking cookies. Session state is kept in your browser's local storage (your JWT session token and, if you're on the dashboard, your platform API key), not in cookies.</li>
+</ul>
+
+<h2>3. Who we share data with</h2>
+<ul>
+<li><strong>The AI provider you choose</strong> (OpenAI, Anthropic, Google, DeepSeek, or Mistral) receives your task description or code and your provider API key, directly, to generate a response. Their own privacy policy governs how they handle that data.</li>
+<li><strong>Payment processors</strong> (Lemon Squeezy and/or PayPro Global) handle checkout and billing as merchant of record; they receive what's needed to process your subscription.</li>
+<li><strong>Resend</strong>, our transactional email provider, sends account emails (welcome, password reset, usage alerts) on our behalf.</li>
+<li>We do not share data with anyone else except where required by law.</li>
+</ul>
+
+<h2>4. Security</h2>
+<p>Passwords are hashed with bcrypt. Platform API keys are stored as SHA-256 hashes, never in plaintext. An optionally-saved AI provider key is encrypted with Fernet (AES-128) before it's written to the database. All traffic is encrypted in transit via TLS.</p>
+
+<h2>5. Data retention</h2>
+<p>We retain account data for as long as your account is active. If you delete your account, we delete your account record and any saved BYOK key within a reasonable period, except where we're required to retain billing records for tax or legal purposes.</p>
+
+<h2>6. Your rights</h2>
+<p>You can access, correct, or delete your account data, and remove a saved BYOK key at any time from Settings. To request a full export or deletion of your account, contact us using the address in your dashboard. If you're in the EU/UK, you may also have rights to restrict or object to processing under GDPR; contact us to exercise them.</p>
+
+<h2>7. Children's privacy</h2>
+<p>The Service is not directed at children under 16, and we do not knowingly collect data from them.</p>
+
+<h2>8. International transfers</h2>
+<p>Our infrastructure and the AI providers you may select can process data outside your home country. By using the Service, you consent to that transfer.</p>
+
+<h2>9. Changes to this policy</h2>
+<p>We'll update this page when our practices change and, for material changes, make reasonable efforts to notify active account holders by email.</p>
+
+<h2>10. Contact</h2>
+<p>Privacy questions or requests: use the support address in your account dashboard.</p>
+</main>
+<footer><div class="container">AI Context Engine &copy; 2026 &middot; <a href="/terms.html">Terms</a> &middot; <a href="/refunds.html">Refunds</a></div></footer>
+</body>
+</html>
