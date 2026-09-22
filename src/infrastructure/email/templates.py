@@ -46,12 +46,14 @@ def welcome_email(email: str, api_key: str, base_url: str) -> tuple[str, str]:
 
 def password_reset_email(email: str, reset_token: str, base_url: str) -> tuple[str, str]:
     subject = "Reset your password — AI Context Engine"
+    reset_url = f"{base_url}/dashboard.html?reset_token={reset_token}"
     content = f"""\
 <h1>Password reset requested</h1>
 <p>We received a request to reset the password for <strong>{email}</strong>.</p>
-<p>Use this token to reset your password:</p>
-<div class="highlight"><code>{reset_token}</code></div>
-<p>This token expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>"""
+<p>Click the button below to set a new password:</p>
+<a href="{reset_url}" class="btn">Reset Password</a>
+<p style="margin-top:16px;font-size:12px;color:#888">Or copy this link: {reset_url}</p>
+<p>This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>"""
     return subject, _BASE.format(content=content, base_url=base_url)
 
 
